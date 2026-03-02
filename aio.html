@@ -1,0 +1,3189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>GRI AutoKPI — Input Tester</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+		rel="stylesheet" />
+	<style>
+		*,
+		*::before,
+		*::after {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		:root {
+			--bg: #07090f;
+			--surface: #0d1320;
+			--surface2: #141c2e;
+			--border: #1c2840;
+			--border-hi: #253450;
+			--accent: #00e5b0;
+			--accent-dim: rgba(0, 229, 176, 0.10);
+			--accent-glow: rgba(0, 229, 176, 0.30);
+			--text: #c8d6eb;
+			--text-dim: #7a92ae;
+			--text-muted: #3f5470;
+			--mandatory: #ff4757;
+			--mandatory-bg: rgba(255, 71, 87, 0.10);
+			--strong: #ff9f1c;
+			--strong-bg: rgba(255, 159, 28, 0.10);
+			--recommended: #3d9cf5;
+			--recommended-bg: rgba(61, 156, 245, 0.10);
+			--optional: #3d5a73;
+			--optional-bg: rgba(61, 90, 115, 0.10);
+			--font: 'Outfit', sans-serif;
+			--mono: 'IBM Plex Mono', monospace;
+			--radius: 10px;
+			--radius-sm: 6px;
+		}
+
+		html {
+			scroll-behavior: smooth;
+		}
+
+		body {
+			background: var(--bg);
+			color: var(--text);
+			font-family: var(--font);
+			font-size: 15px;
+			line-height: 1.6;
+			min-height: 100vh;
+		}
+
+		/* ── Scrollbar ── */
+		::-webkit-scrollbar {
+			width: 5px;
+		}
+
+		::-webkit-scrollbar-track {
+			background: var(--bg);
+		}
+
+		::-webkit-scrollbar-thumb {
+			background: var(--border);
+			border-radius: 3px;
+		}
+
+		/* ── Header ── */
+		.header {
+			background: rgba(13, 19, 32, 0.92);
+			backdrop-filter: blur(12px);
+			border-bottom: 1px solid var(--border);
+			padding: 0 40px;
+			height: 58px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			position: sticky;
+			top: 0;
+			z-index: 200;
+		}
+
+		.header-logo {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			font-family: var(--mono);
+			font-size: 12px;
+			letter-spacing: 0.06em;
+			color: var(--text-dim);
+		}
+
+		.logo-dot {
+			width: 8px;
+			height: 8px;
+			background: var(--accent);
+			border-radius: 50%;
+			box-shadow: 0 0 10px var(--accent-glow);
+			animation: pulse 2.5s ease-in-out infinite;
+		}
+
+		@keyframes pulse {
+
+			0%,
+			100% {
+				box-shadow: 0 0 6px var(--accent-glow);
+			}
+
+			50% {
+				box-shadow: 0 0 16px var(--accent-glow);
+			}
+		}
+
+		.header-nav {
+			display: flex;
+			gap: 2px;
+		}
+
+		.header-nav a {
+			color: var(--text-muted);
+			text-decoration: none;
+			font-size: 13px;
+			font-weight: 500;
+			padding: 5px 12px;
+			border-radius: var(--radius-sm);
+			transition: all 0.15s;
+		}
+
+		.header-nav a:hover {
+			color: var(--accent);
+			background: var(--accent-dim);
+		}
+
+		/* ── Hero ── */
+		.page-hero {
+			padding: 52px 40px 36px;
+			max-width: 1240px;
+			margin: 0 auto;
+			display: flex;
+			align-items: flex-end;
+			justify-content: space-between;
+			gap: 32px;
+		}
+
+		.hero-text h1 {
+			font-size: 44px;
+			font-weight: 800;
+			letter-spacing: -0.025em;
+			line-height: 1.08;
+			margin-bottom: 10px;
+		}
+
+		.hero-text h1 em {
+			color: var(--accent);
+			font-style: normal;
+		}
+
+		.hero-text p {
+			color: var(--text-dim);
+			font-size: 15px;
+			max-width: 460px;
+		}
+
+		.hero-badge {
+			display: flex;
+			gap: 10px;
+			flex-wrap: wrap;
+			flex-shrink: 0;
+		}
+
+		.badge {
+			font-family: var(--mono);
+			font-size: 11px;
+			padding: 5px 12px;
+			border-radius: 999px;
+			border: 1px solid var(--border);
+			color: var(--text-muted);
+			letter-spacing: 0.04em;
+		}
+
+		/* ── Form Wrapper ── */
+		#form-view {
+			max-width: 1240px;
+			margin: 0 auto;
+			padding: 0 40px 140px;
+		}
+
+		/* ── Section Card ── */
+		.section-card {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			margin-bottom: 20px;
+			overflow: hidden;
+			transition: border-color 0.2s;
+		}
+
+		.section-card:focus-within {
+			border-color: var(--border-hi);
+		}
+
+		.section-header {
+			padding: 18px 28px;
+			border-bottom: 1px solid var(--border);
+			display: flex;
+			align-items: center;
+			gap: 14px;
+		}
+
+		.section-num {
+			font-family: var(--mono);
+			font-size: 11px;
+			color: var(--accent);
+			background: var(--accent-dim);
+			padding: 3px 9px;
+			border-radius: 4px;
+			letter-spacing: 0.06em;
+		}
+
+		.section-title {
+			font-size: 16px;
+			font-weight: 600;
+		}
+
+		.section-body {
+			padding: 24px 28px;
+		}
+
+		/* ── Grids ── */
+		.grid-2 {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 18px;
+		}
+
+		.grid-3 {
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr;
+			gap: 18px;
+		}
+
+		.grid-4 {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 18px;
+		}
+
+		@media (max-width: 960px) {
+
+			.grid-3,
+			.grid-4 {
+				grid-template-columns: 1fr 1fr;
+			}
+		}
+
+		@media (max-width: 600px) {
+
+			.grid-2,
+			.grid-3,
+			.grid-4 {
+				grid-template-columns: 1fr;
+			}
+
+			.page-hero {
+				flex-direction: column;
+				padding: 32px 20px 24px;
+			}
+
+			#form-view {
+				padding: 0 20px 140px;
+			}
+
+			.header {
+				padding: 0 20px;
+			}
+
+			.header-nav {
+				display: none;
+			}
+		}
+
+		/* ── Field ── */
+		.field {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+		}
+
+		label {
+			font-size: 12px;
+			font-weight: 600;
+			color: var(--text-muted);
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+		}
+
+		select,
+		input[type="number"] {
+			background: var(--bg);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			color: var(--text);
+			font-family: var(--font);
+			font-size: 14px;
+			padding: 10px 13px;
+			width: 100%;
+			outline: none;
+			transition: border-color 0.15s, box-shadow 0.15s;
+			-webkit-appearance: none;
+			appearance: none;
+		}
+
+		select {
+			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' fill='none'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%233f5470' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+			background-repeat: no-repeat;
+			background-position: right 13px center;
+			padding-right: 36px;
+			cursor: pointer;
+		}
+
+		select:disabled {
+			opacity: 0.4;
+			cursor: not-allowed;
+		}
+
+		select:focus,
+		input[type="number"]:focus {
+			border-color: var(--accent);
+			box-shadow: 0 0 0 3px var(--accent-dim);
+		}
+
+		input[type="number"]::-webkit-inner-spin-button {
+			-webkit-appearance: none;
+		}
+
+		/* ── Toggle Switches ── */
+		.toggle-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+			gap: 10px;
+		}
+
+		.toggle-item {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			background: var(--bg);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			padding: 11px 14px;
+			cursor: pointer;
+			transition: all 0.15s;
+			user-select: none;
+			gap: 10px;
+		}
+
+		.toggle-item:hover {
+			border-color: var(--border-hi);
+		}
+
+		.toggle-label {
+			font-size: 13px;
+			font-weight: 500;
+			color: var(--text-dim);
+		}
+
+		.toggle-switch {
+			position: relative;
+			width: 36px;
+			height: 20px;
+			flex-shrink: 0;
+		}
+
+		.toggle-switch input {
+			opacity: 0;
+			width: 0;
+			height: 0;
+			position: absolute;
+		}
+
+		.toggle-track {
+			position: absolute;
+			inset: 0;
+			background: var(--border);
+			border-radius: 999px;
+			transition: background 0.2s;
+			cursor: pointer;
+		}
+
+		.toggle-track::after {
+			content: '';
+			position: absolute;
+			left: 3px;
+			top: 3px;
+			width: 14px;
+			height: 14px;
+			background: #fff;
+			border-radius: 50%;
+			transition: transform 0.2s;
+		}
+
+		.toggle-switch input:checked+.toggle-track {
+			background: var(--accent);
+		}
+
+		.toggle-switch input:checked+.toggle-track::after {
+			transform: translateX(16px);
+		}
+
+		.toggle-item:has(input:checked) {
+			border-color: var(--accent);
+			background: var(--accent-dim);
+		}
+
+		.toggle-item:has(input:checked) .toggle-label {
+			color: var(--accent);
+		}
+
+		/* ── Chip Selects ── */
+		.chips {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+		}
+
+		.chip-item {
+			display: none;
+		}
+
+		.chip-label {
+			display: inline-flex;
+			align-items: center;
+			padding: 6px 14px;
+			border-radius: 999px;
+			border: 1px solid var(--border);
+			font-size: 13px;
+			font-weight: 500;
+			color: var(--text-dim);
+			background: var(--bg);
+			cursor: pointer;
+			transition: all 0.15s;
+			user-select: none;
+		}
+
+		.chip-item:checked+.chip-label {
+			background: var(--accent-dim);
+			border-color: var(--accent);
+			color: var(--accent);
+		}
+
+		.chip-label:hover {
+			border-color: var(--border-hi);
+			color: var(--text);
+		}
+
+		/* ── Sub-Section Labels ── */
+		.sub-label {
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 0.1em;
+			text-transform: uppercase;
+			color: var(--accent);
+			margin: 22px 0 12px;
+		}
+
+		.sub-label:first-child {
+			margin-top: 0;
+		}
+
+		/* ── Divider ── */
+		.divider {
+			border: none;
+			border-top: 1px solid var(--border);
+			margin: 22px 0;
+		}
+
+		/* ── Materiality ── */
+		.mat-header,
+		.materiality-row {
+			display: grid;
+			grid-template-columns: 1.8fr 1fr 1fr 1fr 38px;
+			gap: 10px;
+			align-items: end;
+		}
+
+		.mat-header {
+			margin-bottom: 8px;
+			align-items: center;
+		}
+
+		.mat-col-label {
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			color: var(--text-muted);
+			text-align: center;
+		}
+
+		.mat-col-label:first-child {
+			text-align: left;
+		}
+
+		.materiality-row {
+			margin-bottom: 8px;
+		}
+
+		.score-input {
+			background: var(--bg);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			color: var(--text);
+			font-family: var(--mono);
+			font-size: 14px;
+			padding: 10px 8px;
+			width: 100%;
+			text-align: center;
+			outline: none;
+			transition: border-color 0.15s, box-shadow 0.15s;
+			-webkit-appearance: none;
+			appearance: none;
+		}
+
+		.score-input::-webkit-inner-spin-button {
+			-webkit-appearance: none;
+		}
+
+		.score-input:focus {
+			border-color: var(--accent);
+			box-shadow: 0 0 0 3px var(--accent-dim);
+		}
+
+		.btn-remove {
+			background: none;
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			color: var(--text-muted);
+			cursor: pointer;
+			height: 40px;
+			width: 38px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 20px;
+			line-height: 1;
+			transition: all 0.15s;
+			flex-shrink: 0;
+		}
+
+		.btn-remove:hover {
+			border-color: var(--mandatory);
+			color: var(--mandatory);
+			background: var(--mandatory-bg);
+		}
+
+		.btn-add-row {
+			background: none;
+			border: 1px dashed var(--border);
+			border-radius: var(--radius-sm);
+			color: var(--text-muted);
+			cursor: pointer;
+			padding: 10px 18px;
+			font-family: var(--font);
+			font-size: 13px;
+			font-weight: 500;
+			margin-top: 12px;
+			transition: all 0.15s;
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.btn-add-row:hover {
+			border-color: var(--accent);
+			color: var(--accent);
+		}
+
+		/* ── Submit Bar ── */
+		.submit-bar {
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			background: rgba(7, 9, 15, 0.95);
+			backdrop-filter: blur(14px);
+			border-top: 1px solid var(--border);
+			padding: 14px 40px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			z-index: 199;
+		}
+
+		.submit-hint {
+			font-size: 13px;
+			color: var(--text-muted);
+		}
+
+		.btn-run {
+			background: var(--accent);
+			color: #07090f;
+			border: none;
+			border-radius: var(--radius-sm);
+			font-family: var(--font);
+			font-size: 15px;
+			font-weight: 700;
+			padding: 12px 32px;
+			cursor: pointer;
+			transition: all 0.2s;
+			letter-spacing: 0.01em;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.btn-run:hover {
+			box-shadow: 0 0 28px var(--accent-glow);
+			transform: translateY(-1px);
+		}
+
+		.btn-run:active {
+			transform: translateY(0);
+		}
+
+		/* ── Results ── */
+		#results-view {
+			max-width: 1240px;
+			margin: 0 auto;
+			padding: 0 40px 80px;
+		}
+
+		.results-hero {
+			padding: 40px 0 28px;
+			display: flex;
+			align-items: flex-start;
+			justify-content: space-between;
+			gap: 24px;
+		}
+
+		.results-hero h2 {
+			font-size: 32px;
+			font-weight: 800;
+			letter-spacing: -0.02em;
+			margin-bottom: 6px;
+		}
+
+		.results-hero p {
+			color: var(--text-dim);
+			font-size: 14px;
+		}
+
+		.btn-back {
+			background: none;
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			color: var(--text-dim);
+			font-family: var(--font);
+			font-size: 13px;
+			font-weight: 500;
+			padding: 9px 18px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			transition: all 0.15s;
+			white-space: nowrap;
+			flex-shrink: 0;
+			margin-top: 6px;
+		}
+
+		.btn-back:hover {
+			border-color: var(--accent);
+			color: var(--accent);
+		}
+
+		/* Stats Bar */
+		.stats-bar {
+			display: flex;
+			gap: 12px;
+			flex-wrap: wrap;
+			margin-bottom: 24px;
+		}
+
+		.stat-pill {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: 10px 18px;
+			border-radius: var(--radius-sm);
+			font-size: 13px;
+			font-weight: 600;
+			border: 1px solid transparent;
+		}
+
+		.stat-num {
+			font-family: var(--mono);
+			font-size: 22px;
+			font-weight: 500;
+			line-height: 1;
+		}
+
+		.stat-pill.s-mandatory {
+			background: var(--mandatory-bg);
+			color: var(--mandatory);
+			border-color: rgba(255, 71, 87, 0.2);
+		}
+
+		.stat-pill.s-strong {
+			background: var(--strong-bg);
+			color: var(--strong);
+			border-color: rgba(255, 159, 28, 0.2);
+		}
+
+		.stat-pill.s-rec {
+			background: var(--recommended-bg);
+			color: var(--recommended);
+			border-color: rgba(61, 156, 245, 0.2);
+		}
+
+		.stat-pill.s-opt {
+			background: var(--optional-bg);
+			color: var(--optional);
+			border-color: rgba(61, 90, 115, 0.2);
+		}
+
+		/* Filter Bar */
+		.filter-bar {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+			margin-bottom: 18px;
+		}
+
+		.filter-btn {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: 999px;
+			color: var(--text-dim);
+			font-family: var(--font);
+			font-size: 13px;
+			font-weight: 500;
+			padding: 6px 16px;
+			cursor: pointer;
+			transition: all 0.15s;
+		}
+
+		.filter-btn:hover {
+			border-color: var(--border-hi);
+			color: var(--text);
+		}
+
+		.filter-btn.active {
+			border-color: var(--accent);
+			color: var(--accent);
+			background: var(--accent-dim);
+		}
+
+		/* KPI Table */
+		.kpi-table {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			overflow: hidden;
+		}
+
+		.kpi-table-head {
+			display: grid;
+			grid-template-columns: 88px 1fr 195px 115px 1fr;
+			gap: 12px;
+			padding: 12px 22px;
+			border-bottom: 1px solid var(--border);
+			background: var(--surface2);
+			font-size: 11px;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			color: var(--text-muted);
+		}
+
+		.kpi-row {
+			display: grid;
+			grid-template-columns: 88px 1fr 195px 115px 1fr;
+			gap: 12px;
+			padding: 15px 22px;
+			border-bottom: 1px solid var(--border);
+			align-items: center;
+			transition: background 0.1s;
+		}
+
+		.kpi-row:last-child {
+			border-bottom: none;
+		}
+
+		.kpi-row:hover {
+			background: var(--surface2);
+		}
+
+		.kpi-code {
+			font-family: var(--mono);
+			font-size: 12px;
+			color: var(--text-dim);
+			font-weight: 500;
+		}
+
+		.kpi-name {
+			font-size: 13px;
+			font-weight: 600;
+			color: var(--text);
+		}
+
+		.status-badge {
+			display: inline-flex;
+			align-items: center;
+			padding: 4px 11px;
+			border-radius: 999px;
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 0.02em;
+			white-space: nowrap;
+		}
+
+		.status-badge.Mandatory {
+			background: var(--mandatory-bg);
+			color: var(--mandatory);
+		}
+
+		.status-badge.StronglyRecommended {
+			background: var(--strong-bg);
+			color: var(--strong);
+		}
+
+		.status-badge.Recommended {
+			background: var(--recommended-bg);
+			color: var(--recommended);
+		}
+
+		.status-badge.Optional {
+			background: var(--optional-bg);
+			color: var(--optional);
+		}
+
+		.score-bar-wrap {
+			display: flex;
+			align-items: center;
+			gap: 9px;
+		}
+
+		.score-bar {
+			flex: 1;
+			height: 4px;
+			background: var(--border);
+			border-radius: 999px;
+			overflow: hidden;
+		}
+
+		.score-bar-fill {
+			height: 100%;
+			border-radius: 999px;
+			background: var(--accent);
+			transition: width 0.5s ease;
+		}
+
+		.score-num {
+			font-family: var(--mono);
+			font-size: 12px;
+			color: var(--text-dim);
+			min-width: 26px;
+			text-align: right;
+		}
+
+		.reason-tags {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 5px;
+		}
+
+		.reason-tag {
+			font-size: 10px;
+			padding: 3px 8px;
+			background: var(--bg);
+			border: 1px solid var(--border);
+			border-radius: 4px;
+			color: var(--text-muted);
+			font-family: var(--mono);
+			white-space: nowrap;
+		}
+
+		.hidden {
+			display: none !important;
+		}
+
+		@media (max-width: 900px) {
+
+			.kpi-table-head,
+			.kpi-row {
+				grid-template-columns: 80px 1fr 150px;
+			}
+
+			.kpi-table-head span:nth-child(n+4),
+			.kpi-row>*:nth-child(n+4) {
+				display: none;
+			}
+		}
+	</style>
+</head>
+
+<body>
+
+	<header class="header">
+		<div class="header-logo">
+			<div class="logo-dot"></div>
+			GRI AutoKPI Engine
+		</div>
+		<nav class="header-nav">
+			<a href="#s-profile">Profile</a>
+			<a href="#s-governance">Governance</a>
+			<a href="#s-strategy">Strategy</a>
+			<a href="#s-operations">Operations</a>
+			<a href="#s-workforce">Workforce</a>
+			<a href="#s-environmental">Environment</a>
+			<a href="#s-materiality">Materiality</a>
+			<a href="#s-regulatory">Regulatory</a>
+		</nav>
+	</header>
+
+	<!-- ═══════════════════════════════════════════════════════════════ FORM -->
+	<div id="form-view">
+		<div class="page-hero">
+			<div class="hero-text">
+				<h1>Auto <em>KPI</em> Suggester</h1>
+				<p>Configure your company profile to receive GRI standard recommendations ranked by confidence score and
+					materiality.</p>
+			</div>
+			<div class="hero-badge">
+				<span class="badge">GRI 2 · GRI 3</span>
+				<span class="badge">GRI 101–419</span>
+				<span class="badge">processInputs()</span>
+			</div>
+		</div>
+
+		<form id="kpi-form" autocomplete="off">
+
+			<!-- ── 01 Company Profile ── -->
+			<div class="section-card" id="s-profile">
+				<div class="section-header">
+					<span class="section-num">01</span>
+					<span class="section-title">Company Profile</span>
+				</div>
+				<div class="section-body">
+					<div class="grid-3">
+						<div class="field">
+							<label for="industry">Industry</label>
+							<select id="industry" name="industry">
+								<option value="">— Select Industry —</option>
+							</select>
+						</div>
+						<div class="field">
+							<label for="sub_industry">Sub-Industry</label>
+							<select id="sub_industry" name="sub_industry" disabled>
+								<option value="">— Select Sub-Industry —</option>
+							</select>
+						</div>
+						<div class="field">
+							<label for="company_size">Company Size</label>
+							<select id="company_size" name="company_size">
+								<option value="">— Select —</option>
+								<option>Micro</option>
+								<option>Small</option>
+								<option>Medium</option>
+								<option>Large</option>
+								<option>Enterprise</option>
+							</select>
+						</div>
+						<div class="field">
+							<label for="ownership_type">Ownership Type</label>
+							<select id="ownership_type" name="ownership_type">
+								<option value="">— Select —</option>
+								<option>Private</option>
+								<option>Public</option>
+								<option>Government</option>
+								<option>Joint Venture</option>
+								<option>Partnership</option>
+							</select>
+						</div>
+						<div class="field">
+							<label for="listing_status">Listing Status</label>
+							<select id="listing_status" name="listing_status">
+								<option value="">— Select —</option>
+								<option>Listed</option>
+								<option>Unlisted</option>
+								<option>Subsidiary</option>
+								<option>Parent</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- ── 02 Governance ── -->
+			<div class="section-card" id="s-governance">
+				<div class="section-header">
+					<span class="section-num">02</span>
+					<span class="section-title">Governance &amp; Ethics</span>
+				</div>
+				<div class="section-body">
+					<div class="toggle-grid">
+						<label class="toggle-item">
+							<span class="toggle-label">Sustainability Oversight</span>
+							<span class="toggle-switch"><input type="checkbox" name="sustainability_oversight"><span
+									class="toggle-track"></span></span>
+						</label>
+						<label class="toggle-item">
+							<span class="toggle-label">Conflicts of Interest Policy</span>
+							<span class="toggle-switch"><input type="checkbox" name="conflicts_of_interest_policy"><span
+									class="toggle-track"></span></span>
+						</label>
+						<label class="toggle-item">
+							<span class="toggle-label">Remuneration Policy</span>
+							<span class="toggle-switch"><input type="checkbox" name="remuneration_policy"><span
+									class="toggle-track"></span></span>
+						</label>
+						<label class="toggle-item">
+							<span class="toggle-label">Anti-Corruption Policy</span>
+							<span class="toggle-switch"><input type="checkbox" name="anti_corruption_policy"><span
+									class="toggle-track"></span></span>
+						</label>
+						<label class="toggle-item">
+							<span class="toggle-label">Code of Conduct</span>
+							<span class="toggle-switch"><input type="checkbox" name="code_of_conduct"><span
+									class="toggle-track"></span></span>
+						</label>
+					</div>
+				</div>
+			</div>
+
+			<!-- ── 03 Strategy ── -->
+			<div class="section-card" id="s-strategy">
+				<div class="section-header">
+					<span class="section-num">03</span>
+					<span class="section-title">Strategy &amp; Policies</span>
+				</div>
+				<div class="section-body">
+					<div class="toggle-grid">
+						<label class="toggle-item">
+							<span class="toggle-label">Sustainability Strategy</span>
+							<span class="toggle-switch"><input type="checkbox" name="sustainability_strategy"><span
+									class="toggle-track"></span></span>
+						</label>
+						<label class="toggle-item">
+							<span class="toggle-label">Grievance Mechanism</span>
+							<span class="toggle-switch"><input type="checkbox" name="grievance_mechanism"><span
+									class="toggle-track"></span></span>
+						</label>
+						<label class="toggle-item">
+							<span class="toggle-label">Compliance Incidents</span>
+							<span class="toggle-switch"><input type="checkbox" name="compliance_incidents"><span
+									class="toggle-track"></span></span>
+						</label>
+					</div>
+					<div class="sub-label">ESG Policy Commitments</div>
+					<div class="chips">
+						<input class="chip-item" type="checkbox" id="esg_ethics" name="esg_policy_commitments"
+							value="Ethics"><label class="chip-label" for="esg_ethics">Ethics</label>
+						<input class="chip-item" type="checkbox" id="esg_hr" name="esg_policy_commitments"
+							value="Human Rights"><label class="chip-label" for="esg_hr">Human Rights</label>
+						<input class="chip-item" type="checkbox" id="esg_labor" name="esg_policy_commitments"
+							value="Labor"><label class="chip-label" for="esg_labor">Labor</label>
+						<input class="chip-item" type="checkbox" id="esg_env" name="esg_policy_commitments"
+							value="Environment"><label class="chip-label" for="esg_env">Environment</label>
+						<input class="chip-item" type="checkbox" id="esg_anti" name="esg_policy_commitments"
+							value="Anti-Corruption"><label class="chip-label" for="esg_anti">Anti-Corruption</label>
+						<input class="chip-item" type="checkbox" id="esg_div" name="esg_policy_commitments"
+							value="Diversity &amp; Inclusion"><label class="chip-label" for="esg_div">Diversity &amp;
+							Inclusion</label>
+						<input class="chip-item" type="checkbox" id="esg_climate" name="esg_policy_commitments"
+							value="Climate"><label class="chip-label" for="esg_climate">Climate</label>
+						<input class="chip-item" type="checkbox" id="esg_privacy" name="esg_policy_commitments"
+							value="Data Privacy"><label class="chip-label" for="esg_privacy">Data Privacy</label>
+					</div>
+					<div class="sub-label">Policy Embedding Mechanisms</div>
+					<div class="chips">
+						<input class="chip-item" type="checkbox" id="pe_training" name="policy_embedding"
+							value="Training"><label class="chip-label" for="pe_training">Training</label>
+						<input class="chip-item" type="checkbox" id="pe_sops" name="policy_embedding"
+							value="SOPs"><label class="chip-label" for="pe_sops">SOPs</label>
+						<input class="chip-item" type="checkbox" id="pe_monitoring" name="policy_embedding"
+							value="Monitoring"><label class="chip-label" for="pe_monitoring">Monitoring</label>
+						<input class="chip-item" type="checkbox" id="pe_audits" name="policy_embedding"
+							value="Audits"><label class="chip-label" for="pe_audits">Audits</label>
+						<input class="chip-item" type="checkbox" id="pe_committee" name="policy_embedding"
+							value="Committee"><label class="chip-label" for="pe_committee">Committee</label>
+					</div>
+					<div class="sub-label">Remediation Process</div>
+					<div class="chips">
+						<input class="chip-item" type="checkbox" id="rp_grievance" name="remediation_process"
+							value="Grievance Mechanism"><label class="chip-label" for="rp_grievance">Grievance
+							Mechanism</label>
+						<input class="chip-item" type="checkbox" id="rp_legal" name="remediation_process"
+							value="Legal Action"><label class="chip-label" for="rp_legal">Legal Action</label>
+						<input class="chip-item" type="checkbox" id="rp_mediation" name="remediation_process"
+							value="Mediation"><label class="chip-label" for="rp_mediation">Mediation</label>
+						<input class="chip-item" type="checkbox" id="rp_comp" name="remediation_process"
+							value="Compensation"><label class="chip-label" for="rp_comp">Compensation</label>
+					</div>
+				</div>
+			</div>
+
+			<!-- ── 04 Operations ── -->
+			<div class="section-card" id="s-operations">
+				<div class="section-header">
+					<span class="section-num">04</span>
+					<span class="section-title">Operations &amp; Risk Signals</span>
+				</div>
+				<div class="section-body">
+					<div class="toggle-grid">
+						<label class="toggle-item"><span class="toggle-label">Manufacturing</span><span
+								class="toggle-switch"><input type="checkbox" name="manufacturing"><span
+									class="toggle-track"></span></span></label>
+						<label class="toggle-item"><span class="toggle-label">Energy Use</span><span
+								class="toggle-switch"><input type="checkbox" name="energy_use"><span
+									class="toggle-track"></span></span></label>
+						<label class="toggle-item"><span class="toggle-label">Water Intensive</span><span
+								class="toggle-switch"><input type="checkbox" name="water_intensive"><span
+									class="toggle-track"></span></span></label>
+						<label class="toggle-item"><span class="toggle-label">Waste Generated</span><span
+								class="toggle-switch"><input type="checkbox" name="waste_generated"><span
+									class="toggle-track"></span></span></label>
+						<label class="toggle-item"><span class="toggle-label">Hazardous Material</span><span
+								class="toggle-switch"><input type="checkbox" name="hazardous_material"><span
+									class="toggle-track"></span></span></label>
+						<label class="toggle-item"><span class="toggle-label">Suppliers Exist</span><span
+								class="toggle-switch"><input type="checkbox" name="suppliers_exist"><span
+									class="toggle-track"></span></span></label>
+						<label class="toggle-item"><span class="toggle-label">Contract / Migrant Labor</span><span
+								class="toggle-switch"><input type="checkbox" name="contract_labor"><span
+									class="toggle-track"></span></span></label>
+						<label class="toggle-item"><span class="toggle-label">Security Personnel</span><span
+								class="toggle-switch"><input type="checkbox" name="security_personnel"><span
+									class="toggle-track"></span></span></label>
+						<label class="toggle-item"><span class="toggle-label">Community Interaction</span><span
+								class="toggle-switch"><input type="checkbox" name="community_interaction"><span
+									class="toggle-track"></span></span></label>
+						<label class="toggle-item"><span class="toggle-label">Indigenous Land</span><span
+								class="toggle-switch"><input type="checkbox" name="indigenous_land"><span
+									class="toggle-track"></span></span></label>
+						<label class="toggle-item"><span class="toggle-label">Customer Data</span><span
+								class="toggle-switch"><input type="checkbox" name="customer_data"><span
+									class="toggle-track"></span></span></label>
+						<label class="toggle-item"><span class="toggle-label">Product Safety</span><span
+								class="toggle-switch"><input type="checkbox" name="product_safety"><span
+									class="toggle-track"></span></span></label>
+						<label class="toggle-item"><span class="toggle-label">Political Engagement</span><span
+								class="toggle-switch"><input type="checkbox" name="political_engagement"><span
+									class="toggle-track"></span></span></label>
+					</div>
+					<hr class="divider" />
+					<div class="grid-2">
+						<div class="field">
+							<label for="child_labor_risk">Child Labor Risk</label>
+							<select id="child_labor_risk" name="child_labor_risk">
+								<option value="None">None</option>
+								<option value="Low">Low</option>
+								<option value="Medium">Medium</option>
+								<option value="High">High</option>
+							</select>
+						</div>
+						<div class="field">
+							<label for="forced_labor_risk">Forced Labor Risk</label>
+							<select id="forced_labor_risk" name="forced_labor_risk">
+								<option value="None">None</option>
+								<option value="Low">Low</option>
+								<option value="Medium">Medium</option>
+								<option value="High">High</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- ── 05 Workforce ── -->
+			<div class="section-card" id="s-workforce">
+				<div class="section-header">
+					<span class="section-num">05</span>
+					<span class="section-title">Workforce &amp; Labor</span>
+				</div>
+				<div class="section-body">
+					<div class="grid-4" style="margin-bottom:22px">
+						<div class="field">
+							<label for="employees_total">Total Employees</label>
+							<input type="number" id="employees_total" name="employees_total" min="0" placeholder="0" />
+						</div>
+						<div class="field">
+							<label for="training_hours">Training Hrs / Employee / Yr</label>
+							<input type="number" id="training_hours" name="training_hours" min="0" placeholder="0" />
+						</div>
+						<div class="field">
+							<label for="union_status">Union Status</label>
+							<select id="union_status" name="union_status">
+								<option value="None">None</option>
+								<option value="Partial">Partial</option>
+								<option value="Full">Full</option>
+							</select>
+						</div>
+						<div class="field">
+							<label for="occupational_risk">Occupational Risk</label>
+							<select id="occupational_risk" name="occupational_risk">
+								<option value="Low">Low</option>
+								<option value="Medium">Medium</option>
+								<option value="High">High</option>
+								<option value="Critical">Critical</option>
+							</select>
+						</div>
+					</div>
+					<div class="sub-label">Workforce Type</div>
+					<div class="chips" style="margin-bottom:20px">
+						<input class="chip-item" type="checkbox" id="wt_perm" name="workforce_type"
+							value="Permanent"><label class="chip-label" for="wt_perm">Permanent</label>
+						<input class="chip-item" type="checkbox" id="wt_contract" name="workforce_type"
+							value="Contract"><label class="chip-label" for="wt_contract">Contract</label>
+						<input class="chip-item" type="checkbox" id="wt_gig" name="workforce_type" value="Gig"><label
+							class="chip-label" for="wt_gig">Gig</label>
+						<input class="chip-item" type="checkbox" id="wt_migrant" name="workforce_type"
+							value="Migrant"><label class="chip-label" for="wt_migrant">Migrant</label>
+					</div>
+					<div class="sub-label">Diversity Dimensions Tracked</div>
+					<div class="chips">
+						<input class="chip-item" type="checkbox" id="dd_gender" name="diversity_dimensions"
+							value="Gender"><label class="chip-label" for="dd_gender">Gender</label>
+						<input class="chip-item" type="checkbox" id="dd_age" name="diversity_dimensions"
+							value="Age"><label class="chip-label" for="dd_age">Age</label>
+						<input class="chip-item" type="checkbox" id="dd_disability" name="diversity_dimensions"
+							value="Disability"><label class="chip-label" for="dd_disability">Disability</label>
+						<input class="chip-item" type="checkbox" id="dd_ethnicity" name="diversity_dimensions"
+							value="Ethnicity"><label class="chip-label" for="dd_ethnicity">Ethnicity</label>
+						<input class="chip-item" type="checkbox" id="dd_other" name="diversity_dimensions"
+							value="Other"><label class="chip-label" for="dd_other">Other</label>
+					</div>
+				</div>
+			</div>
+
+			<!-- ── 06 Environmental ── -->
+			<div class="section-card" id="s-environmental">
+				<div class="section-header">
+					<span class="section-num">06</span>
+					<span class="section-title">Environment &amp; Climate</span>
+				</div>
+				<div class="section-body">
+					<div class="grid-2" style="margin-bottom:22px">
+						<div class="field">
+							<label for="env_sensitive_sites">Environmental Sensitivity of Sites</label>
+							<select id="env_sensitive_sites" name="env_sensitive_sites">
+								<option value="None">None</option>
+								<option value="Low">Low</option>
+								<option value="Medium">Medium</option>
+								<option value="High">High</option>
+							</select>
+						</div>
+						<div class="field">
+							<label for="climate_risk">Climate Risk</label>
+							<select id="climate_risk" name="climate_risk">
+								<option value="None">None</option>
+								<option value="Physical">Physical</option>
+								<option value="Transition">Transition</option>
+								<option value="Both">Both</option>
+							</select>
+						</div>
+					</div>
+					<div class="toggle-grid">
+						<label class="toggle-item">
+							<span class="toggle-label">Biodiversity Presence</span>
+							<span class="toggle-switch"><input type="checkbox" name="biodiversity_presence"><span
+									class="toggle-track"></span></span>
+						</label>
+						<label class="toggle-item">
+							<span class="toggle-label">Environmental Fines</span>
+							<span class="toggle-switch"><input type="checkbox" name="environmental_fines"><span
+									class="toggle-track"></span></span>
+						</label>
+					</div>
+				</div>
+			</div>
+
+			<!-- ── 07 Materiality ── -->
+			<div class="section-card" id="s-materiality">
+				<div class="section-header">
+					<span class="section-num">07</span>
+					<span class="section-title">Materiality Assessment (GRI 3)</span>
+				</div>
+				<div class="section-body">
+					<div class="mat-header">
+						<span class="mat-col-label">ESG Topic</span>
+						<span class="mat-col-label">Impact (0–5)</span>
+						<span class="mat-col-label">Likelihood (0–5)</span>
+						<span class="mat-col-label">Stakeholder Concern (0–5)</span>
+						<span></span>
+					</div>
+					<div id="materiality-rows"></div>
+					<button type="button" class="btn-add-row" id="add-mat-row">
+						<svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+							<path d="M6.5 1v11M1 6.5h11" stroke="currentColor" stroke-width="1.5"
+								stroke-linecap="round" />
+						</svg>
+						Add Topic
+					</button>
+				</div>
+			</div>
+
+			<!-- ── 08 Regulatory ── -->
+			<div class="section-card" id="s-regulatory">
+				<div class="section-header">
+					<span class="section-num">08</span>
+					<span class="section-title">Regulatory Context</span>
+				</div>
+				<div class="section-body">
+					<div class="toggle-grid">
+						<label class="toggle-item">
+							<span class="toggle-label">BRSR Applicable</span>
+							<span class="toggle-switch"><input type="checkbox" name="BRSR_applicable"><span
+									class="toggle-track"></span></span>
+						</label>
+						<label class="toggle-item">
+							<span class="toggle-label">CSRD Exposure</span>
+							<span class="toggle-switch"><input type="checkbox" name="CSRD_exposure"><span
+									class="toggle-track"></span></span>
+						</label>
+						<label class="toggle-item">
+							<span class="toggle-label">Government Tenders</span>
+							<span class="toggle-switch"><input type="checkbox" name="govt_tenders"><span
+									class="toggle-track"></span></span>
+						</label>
+						<label class="toggle-item">
+							<span class="toggle-label">ESG-linked Finance</span>
+							<span class="toggle-switch"><input type="checkbox" name="ESG_finance"><span
+									class="toggle-track"></span></span>
+						</label>
+					</div>
+				</div>
+			</div>
+
+		</form>
+	</div><!-- /#form-view -->
+
+	<!-- ══════════════════════════════════════════════════════════════ RESULTS -->
+	<div id="results-view" class="hidden">
+		<div class="results-hero">
+			<div>
+				<h2>KPI Recommendations</h2>
+				<p>Based on your company profile, operational signals &amp; materiality inputs</p>
+			</div>
+			<button class="btn-back" id="btn-back">
+				<svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+					<path d="M9.5 3L4.5 7.5l5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+						stroke-linejoin="round" />
+				</svg>
+				Edit Inputs
+			</button>
+		</div>
+		<div class="stats-bar" id="stats-bar"></div>
+		<div class="filter-bar" id="filter-bar">
+			<button class="filter-btn active" data-filter="all">All</button>
+			<button class="filter-btn" data-filter="Mandatory">Mandatory</button>
+			<button class="filter-btn" data-filter="Strongly Recommended">Strongly Recommended</button>
+			<button class="filter-btn" data-filter="Recommended">Recommended</button>
+			<button class="filter-btn" data-filter="Optional">Optional</button>
+		</div>
+		<div class="kpi-table">
+			<div class="kpi-table-head">
+				<span>Code</span>
+				<span>GRI Standard</span>
+				<span>Status</span>
+				<span>Confidence</span>
+				<span>Reasons</span>
+			</div>
+			<div id="kpi-results-body"></div>
+		</div>
+	</div>
+
+	<!-- Submit Bar -->
+	<div class="submit-bar" id="submit-bar">
+		<span class="submit-hint" id="submit-hint">Form state auto-saved to local storage</span>
+		<button type="button" class="btn-run" id="btn-run">
+			Run Analysis
+			<svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+				<path d="M5.5 3l5 4.5-5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+					stroke-linejoin="round" />
+			</svg>
+		</button>
+	</div>
+
+	<script>
+		const MATERIALITY_THRESHOLD = 4.0;
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// TOPIC → GRI STANDARD mapping (used for materiality scoring)
+		// Unit is always the GRI standard (e.g. "GRI 103"), never a sub-disclosure.
+		//   GRI 101 supersedes GRI 304 (Biodiversity 2016)
+		//   GRI 102 supersedes GRI 305 (Emissions/Climate 2016)
+		//   GRI 103 supersedes GRI 302 (Energy 2016)
+		// ─────────────────────────────────────────────────────────────────────────────
+		const topicKpiMapping = {
+			"Climate": ["GRI 102", "GRI 103"],
+			"Energy": ["GRI 103"],
+			"Water": ["GRI 303"],
+			"Waste": ["GRI 306"],
+			"Biodiversity": ["GRI 101"],
+			"Materials": ["GRI 301"],
+			"Health & Safety": ["GRI 403"],
+			"Human Rights": ["GRI 407", "GRI 408", "GRI 409", "GRI 412"],
+			"Supply Chain": ["GRI 204", "GRI 308", "GRI 414"],
+			"Community": ["GRI 413"],
+			"Data Privacy": ["GRI 418"],
+			"Product Safety": ["GRI 416", "GRI 417"],
+			"Labor": ["GRI 401", "GRI 402", "GRI 404"],
+			"Diversity": ["GRI 405"],
+			"Ethics": ["GRI 205", "GRI 206"],
+			"Tax": ["GRI 207"],
+			"Economic": ["GRI 201", "GRI 202", "GRI 203"],
+		};
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// INDUSTRY → { gri_standard: weight }
+		// ─────────────────────────────────────────────────────────────────────────────
+		const industryKpiMapping = {
+			Manufacturing: {
+				"GRI 301": 25,
+				"GRI 103": 25,
+				"GRI 303": 20,
+				"GRI 102": 25,
+				"GRI 306": 25,
+				"GRI 403": 20,
+				"GRI 308": 15,
+			},
+			Energy: {
+				"GRI 103": 25,
+				"GRI 102": 25,
+				"GRI 303": 15,
+				"GRI 306": 15,
+			},
+			Water: {
+				"GRI 303": 30,
+				"GRI 101": 20,
+			},
+			Retail: {
+				"GRI 416": 20,
+				"GRI 417": 20,
+				"GRI 418": 20,
+				"GRI 414": 15,
+				"GRI 308": 15,
+			},
+			Services: {
+				"GRI 418": 20,
+				"GRI 416": 15,
+				"GRI 401": 10,
+			},
+			IT: {
+				"GRI 418": 25,
+				"GRI 103": 15,
+				"GRI 102": 15,
+			},
+			Healthcare: {
+				"GRI 416": 25,
+				"GRI 417": 20,
+				"GRI 403": 20,
+				"GRI 418": 15,
+			},
+			Agriculture: {
+				"GRI 303": 25,
+				"GRI 301": 20,
+				"GRI 408": 20,
+				"GRI 101": 20,
+				"GRI 306": 15,
+			},
+			Mining: {
+				"GRI 103": 20,
+				"GRI 102": 20,
+				"GRI 101": 25,
+				"GRI 403": 25,
+				"GRI 306": 20,
+				"GRI 303": 20,
+			},
+			Construction: {
+				"GRI 403": 25,
+				"GRI 103": 15,
+				"GRI 306": 15,
+				"GRI 413": 15,
+				"GRI 301": 10,
+			},
+			Logistics: {
+				"GRI 103": 20,
+				"GRI 102": 20,
+				"GRI 403": 15,
+			},
+			Finance: {
+				"GRI 201": 25,
+				"GRI 205": 20,
+				"GRI 207": 20,
+				"GRI 418": 15,
+			},
+			Education: {
+				"GRI 404": 20,
+				"GRI 406": 15,
+				"GRI 401": 10,
+			},
+			"R&D": {
+				"GRI 103": 15,
+				"GRI 418": 15,
+				"GRI 404": 10,
+			},
+			Trading: {
+				"GRI 204": 20,
+				"GRI 308": 20,
+				"GRI 414": 15,
+			},
+		};
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// SUB-INDUSTRY → { gri_standard: weight }
+		// Placeholder set — expand as needed.
+		// ─────────────────────────────────────────────────────────────────────────────
+		const subIndustryKpiMapping = {
+			// ── Manufacturing ────────────────────────────────────────────────────────
+			Plastics: {"GRI 306": 20, "GRI 301": 20, "GRI 303": 15},
+			Steel: {"GRI 103": 20, "GRI 102": 20, "GRI 301": 15, "GRI 403": 15},
+			Textiles: {"GRI 303": 20, "GRI 306": 15, "GRI 408": 20, "GRI 414": 20},
+			Automotive: {"GRI 301": 20, "GRI 103": 20, "GRI 102": 20, "GRI 403": 15},
+			Chemicals: {"GRI 306": 25, "GRI 303": 20, "GRI 301": 20, "GRI 403": 20},
+			Electronics: {"GRI 306": 25, "GRI 301": 20, "GRI 418": 15, "GRI 308": 15},
+			"Food & Beverage": {
+				"GRI 303": 20,
+				"GRI 416": 20,
+				"GRI 301": 15,
+				"GRI 306": 15,
+			},
+			"Paper & Pulp": {
+				"GRI 301": 25,
+				"GRI 303": 20,
+				"GRI 101": 20,
+				"GRI 306": 15,
+			},
+			Rubber: {"GRI 301": 20, "GRI 306": 20, "GRI 303": 15, "GRI 403": 10},
+			Glass: {"GRI 103": 20, "GRI 301": 20, "GRI 306": 15, "GRI 403": 10},
+			Cement: {"GRI 103": 25, "GRI 102": 25, "GRI 301": 15, "GRI 306": 15},
+			Aerospace: {"GRI 103": 20, "GRI 301": 20, "GRI 403": 20, "GRI 308": 15},
+			Defense: {"GRI 403": 20, "GRI 205": 20, "GRI 301": 15, "GRI 308": 10},
+			Furniture: {"GRI 301": 25, "GRI 101": 15, "GRI 306": 15, "GRI 414": 10},
+			Printing: {"GRI 301": 20, "GRI 306": 20, "GRI 303": 10},
+			"Medical Devices": {
+				"GRI 416": 25,
+				"GRI 417": 20,
+				"GRI 301": 15,
+				"GRI 306": 10,
+			},
+			Packaging: {"GRI 301": 25, "GRI 306": 20, "GRI 303": 15, "GRI 416": 10},
+			Semiconductors: {
+				"GRI 303": 25,
+				"GRI 306": 20,
+				"GRI 103": 15,
+				"GRI 301": 15,
+			},
+			"Luxury Goods": {
+				"GRI 301": 20,
+				"GRI 414": 20,
+				"GRI 417": 15,
+				"GRI 308": 10,
+			},
+			Tobacco: {"GRI 416": 25, "GRI 417": 25, "GRI 306": 15, "GRI 408": 15},
+			Aluminium: {
+				"GRI 103": 20,
+				"GRI 102": 20,
+				"GRI 301": 20,
+				"GRI 306": 15,
+				"GRI 403": 15,
+			},
+			Ceramics: {"GRI 103": 15, "GRI 301": 20, "GRI 306": 15, "GRI 303": 10},
+			"Industrial Machinery": {
+				"GRI 301": 20,
+				"GRI 403": 20,
+				"GRI 306": 15,
+				"GRI 308": 10,
+			},
+			"Consumer Goods": {
+				"GRI 416": 20,
+				"GRI 301": 15,
+				"GRI 414": 15,
+				"GRI 417": 15,
+			},
+
+			// ── Energy ───────────────────────────────────────────────────────────────
+			"Oil & Gas": {"GRI 103": 25, "GRI 102": 25, "GRI 306": 20, "GRI 101": 15},
+			Solar: {"GRI 103": 15, "GRI 102": 15, "GRI 101": 10},
+			"Wind Power": {"GRI 103": 15, "GRI 102": 15, "GRI 101": 15},
+			Coal: {"GRI 103": 25, "GRI 102": 30, "GRI 306": 20, "GRI 101": 20},
+			Nuclear: {"GRI 103": 20, "GRI 102": 20, "GRI 306": 25, "GRI 403": 25},
+			Hydropower: {"GRI 303": 25, "GRI 101": 25, "GRI 413": 20, "GRI 103": 10},
+			Geothermal: {"GRI 303": 20, "GRI 101": 20, "GRI 103": 15},
+			Biomass: {"GRI 103": 20, "GRI 301": 20, "GRI 101": 15, "GRI 306": 15},
+			LNG: {"GRI 103": 25, "GRI 102": 25, "GRI 306": 20, "GRI 403": 10},
+			"Electricity Transmission": {"GRI 103": 20, "GRI 102": 15, "GRI 413": 15},
+			"Energy Storage": {"GRI 103": 15, "GRI 301": 20, "GRI 306": 20},
+			"Hydrogen Energy": {
+				"GRI 103": 20,
+				"GRI 102": 20,
+				"GRI 303": 15,
+				"GRI 101": 10,
+			},
+
+			// ── Retail ───────────────────────────────────────────────────────────────
+			"Fast Fashion": {
+				"GRI 301": 20,
+				"GRI 414": 20,
+				"GRI 416": 15,
+				"GRI 408": 15,
+			},
+			Grocery: {"GRI 416": 20, "GRI 306": 15, "GRI 414": 15},
+			"E-commerce": {
+				"GRI 418": 25,
+				"GRI 414": 15,
+				"GRI 103": 10,
+				"GRI 416": 10,
+			},
+			"Luxury Retail": {
+				"GRI 301": 20,
+				"GRI 417": 20,
+				"GRI 414": 15,
+				"GRI 308": 10,
+			},
+			"Electronics Retail": {
+				"GRI 416": 20,
+				"GRI 418": 20,
+				"GRI 308": 15,
+				"GRI 306": 10,
+			},
+			"Restaurants / Food Service": {
+				"GRI 416": 25,
+				"GRI 306": 20,
+				"GRI 408": 15,
+				"GRI 303": 10,
+			},
+			"Automotive Retail": {
+				"GRI 416": 15,
+				"GRI 308": 15,
+				"GRI 103": 15,
+				"GRI 417": 10,
+			},
+			"Pharmacy Retail": {"GRI 416": 25, "GRI 417": 20, "GRI 418": 15},
+			"Department Stores": {
+				"GRI 416": 20,
+				"GRI 414": 15,
+				"GRI 308": 15,
+				"GRI 418": 10,
+			},
+			"Sports & Outdoor Retail": {"GRI 414": 20, "GRI 301": 15, "GRI 416": 15},
+			"Home Improvement Retail": {
+				"GRI 416": 15,
+				"GRI 301": 15,
+				"GRI 308": 15,
+				"GRI 306": 10,
+			},
+
+			// ── Finance ──────────────────────────────────────────────────────────────
+			Banking: {"GRI 201": 25, "GRI 205": 20, "GRI 418": 20, "GRI 207": 15},
+			Insurance: {"GRI 201": 20, "GRI 418": 15, "GRI 207": 10},
+			"Asset Management": {
+				"GRI 201": 20,
+				"GRI 207": 20,
+				"GRI 205": 15,
+				"GRI 418": 10,
+			},
+			"Private Equity": {"GRI 201": 20, "GRI 205": 20, "GRI 207": 15},
+			Fintech: {"GRI 418": 25, "GRI 205": 20, "GRI 201": 15, "GRI 207": 10},
+			Microfinance: {"GRI 201": 20, "GRI 203": 20, "GRI 413": 15},
+			"Stock Exchange": {
+				"GRI 201": 20,
+				"GRI 205": 20,
+				"GRI 207": 15,
+				"GRI 418": 10,
+			},
+			"Investment Banking": {"GRI 201": 25, "GRI 205": 20, "GRI 207": 20},
+			"Venture Capital": {"GRI 201": 20, "GRI 205": 15, "GRI 207": 10},
+			"Real Estate Finance": {"GRI 201": 20, "GRI 413": 15, "GRI 205": 15},
+			"Trade Finance": {"GRI 204": 20, "GRI 205": 15, "GRI 207": 15},
+
+			// ── Healthcare ───────────────────────────────────────────────────────────
+			Pharma: {"GRI 416": 25, "GRI 417": 20, "GRI 403": 15},
+			Hospital: {"GRI 403": 25, "GRI 416": 20, "GRI 418": 15},
+			"Medical Devices (HC)": {
+				"GRI 416": 25,
+				"GRI 301": 15,
+				"GRI 403": 15,
+				"GRI 306": 10,
+			},
+			Diagnostics: {"GRI 416": 20, "GRI 418": 20, "GRI 306": 15},
+			Biotech: {"GRI 416": 20, "GRI 101": 15, "GRI 306": 15, "GRI 418": 10},
+			Dental: {"GRI 416": 20, "GRI 403": 15, "GRI 306": 10},
+			"Mental Health": {"GRI 403": 20, "GRI 418": 20, "GRI 406": 15},
+			Veterinary: {"GRI 416": 20, "GRI 403": 15, "GRI 306": 10},
+			"Home Healthcare": {"GRI 403": 20, "GRI 418": 15, "GRI 401": 10},
+			"Clinical Research": {"GRI 416": 20, "GRI 418": 15, "GRI 412": 10},
+
+			// ── Agriculture ──────────────────────────────────────────────────────────
+			Farming: {"GRI 303": 20, "GRI 301": 15, "GRI 408": 20},
+			Aquaculture: {"GRI 303": 25, "GRI 101": 20},
+			Forestry: {"GRI 301": 25, "GRI 101": 25, "GRI 413": 15},
+			Livestock: {"GRI 303": 20, "GRI 306": 20, "GRI 101": 15, "GRI 408": 15},
+			Horticulture: {"GRI 303": 20, "GRI 301": 20, "GRI 101": 15},
+			"Organic Farming": {
+				"GRI 303": 20,
+				"GRI 301": 20,
+				"GRI 101": 20,
+				"GRI 416": 10,
+			},
+			"Agri-tech": {"GRI 303": 15, "GRI 418": 15, "GRI 301": 10},
+			"Palm Oil": {"GRI 101": 25, "GRI 303": 20, "GRI 408": 20, "GRI 414": 20},
+			"Sugar & Ethanol": {
+				"GRI 303": 20,
+				"GRI 306": 15,
+				"GRI 408": 20,
+				"GRI 101": 10,
+			},
+			"Coffee & Cocoa": {
+				"GRI 303": 15,
+				"GRI 408": 20,
+				"GRI 414": 20,
+				"GRI 101": 10,
+			},
+			Fisheries: {"GRI 303": 25, "GRI 101": 25, "GRI 408": 15},
+
+			// ── Mining ───────────────────────────────────────────────────────────────
+			"Coal Mining": {
+				"GRI 103": 20,
+				"GRI 102": 25,
+				"GRI 101": 25,
+				"GRI 403": 25,
+			},
+			"Metal Mining": {
+				"GRI 301": 20,
+				"GRI 101": 20,
+				"GRI 403": 20,
+				"GRI 306": 15,
+			},
+			"Gold Mining": {
+				"GRI 301": 20,
+				"GRI 101": 25,
+				"GRI 403": 25,
+				"GRI 303": 15,
+			},
+			"Diamond Mining": {
+				"GRI 301": 20,
+				"GRI 101": 20,
+				"GRI 403": 25,
+				"GRI 412": 15,
+			},
+			"Sand & Gravel": {"GRI 101": 20, "GRI 303": 20, "GRI 403": 15},
+			"Phosphate Mining": {
+				"GRI 303": 25,
+				"GRI 101": 20,
+				"GRI 306": 20,
+				"GRI 403": 15,
+			},
+			"Uranium Mining": {
+				"GRI 306": 25,
+				"GRI 101": 20,
+				"GRI 403": 25,
+				"GRI 102": 15,
+			},
+			"Iron Ore": {"GRI 301": 20, "GRI 101": 20, "GRI 403": 20, "GRI 306": 15},
+			"Copper Mining": {
+				"GRI 303": 20,
+				"GRI 101": 20,
+				"GRI 403": 20,
+				"GRI 306": 15,
+			},
+			"Lithium Mining": {
+				"GRI 303": 25,
+				"GRI 101": 25,
+				"GRI 403": 20,
+				"GRI 306": 15,
+			},
+			"Rare Earth Mining": {
+				"GRI 303": 20,
+				"GRI 101": 25,
+				"GRI 306": 20,
+				"GRI 403": 20,
+			},
+			Quarrying: {"GRI 101": 20, "GRI 303": 15, "GRI 403": 20, "GRI 413": 10},
+
+			// ── IT / Software / Digital ──────────────────────────────────────────────
+			Software: {"GRI 418": 25, "GRI 103": 10},
+			Consulting: {"GRI 418": 15, "GRI 205": 10},
+			Cybersecurity: {"GRI 418": 30, "GRI 205": 15},
+			"Cloud Computing": {"GRI 103": 25, "GRI 102": 20, "GRI 418": 20},
+			"AI / ML": {"GRI 418": 25, "GRI 103": 15, "GRI 205": 15},
+			Telecom: {"GRI 418": 20, "GRI 103": 20, "GRI 102": 15, "GRI 413": 10},
+			"Data Centers": {
+				"GRI 103": 30,
+				"GRI 102": 25,
+				"GRI 303": 20,
+				"GRI 418": 10,
+			},
+			Gaming: {"GRI 418": 25, "GRI 416": 15, "GRI 406": 10},
+			"E-commerce Platform": {"GRI 418": 25, "GRI 414": 20, "GRI 416": 15},
+			"IT Services / Outsourcing": {
+				"GRI 418": 20,
+				"GRI 401": 15,
+				"GRI 404": 10,
+			},
+			"Media & Publishing": {"GRI 418": 15, "GRI 417": 15, "GRI 401": 10},
+			"Social Media": {"GRI 418": 25, "GRI 416": 20, "GRI 205": 10},
+			"AdTech": {"GRI 418": 25, "GRI 417": 20, "GRI 205": 10},
+			"SaaS": {"GRI 418": 20, "GRI 103": 10, "GRI 404": 10},
+
+			// ── Logistics & Transportation ───────────────────────────────────────────
+			"3PL / Logistics": {"GRI 103": 20, "GRI 102": 20},
+			"Shipping / Maritime": {
+				"GRI 103": 25,
+				"GRI 102": 25,
+				"GRI 101": 15,
+				"GRI 306": 15,
+			},
+			"Aviation / Airlines": {"GRI 103": 30, "GRI 102": 30, "GRI 403": 15},
+			Rail: {"GRI 103": 20, "GRI 102": 20, "GRI 403": 15, "GRI 413": 10},
+			"Port Operations": {
+				"GRI 306": 20,
+				"GRI 303": 15,
+				"GRI 403": 20,
+				"GRI 413": 10,
+			},
+			"Last-mile Delivery": {"GRI 103": 20, "GRI 401": 15},
+			"Freight Forwarding": {"GRI 103": 15, "GRI 204": 15, "GRI 308": 10},
+			Warehousing: {"GRI 306": 15, "GRI 403": 20, "GRI 103": 10},
+			Trucking: {"GRI 103": 25, "GRI 102": 20, "GRI 403": 15},
+			"Cold Chain Logistics": {"GRI 103": 20, "GRI 102": 20, "GRI 306": 15},
+
+			// ── Construction & Real Estate ───────────────────────────────────────────
+			"Real Estate Development": {"GRI 413": 20, "GRI 403": 20, "GRI 301": 15},
+			"Civil Engineering": {"GRI 403": 25, "GRI 301": 20, "GRI 306": 15},
+			Infrastructure: {"GRI 403": 25, "GRI 413": 20, "GRI 103": 10},
+			"Interior Design / Fit-out": {
+				"GRI 301": 20,
+				"GRI 306": 15,
+				"GRI 403": 10,
+			},
+			"Building Materials": {"GRI 301": 25, "GRI 103": 15, "GRI 306": 15},
+			"EPC Contractors": {
+				"GRI 403": 25,
+				"GRI 413": 20,
+				"GRI 308": 15,
+				"GRI 306": 10,
+			},
+			"Property Management": {"GRI 103": 15, "GRI 401": 10, "GRI 413": 15},
+
+			// ── Education ────────────────────────────────────────────────────────────
+			"Higher Education": {"GRI 404": 20, "GRI 401": 15, "GRI 406": 15},
+			"K-12": {"GRI 404": 20, "GRI 406": 15},
+			"Online Education / EdTech": {"GRI 418": 20, "GRI 404": 15},
+			"Vocational Training": {"GRI 404": 25, "GRI 401": 15},
+			"Early Childhood": {"GRI 406": 15, "GRI 403": 10},
+			"Corporate Training": {"GRI 404": 25, "GRI 405": 10},
+
+			// ── R&D ──────────────────────────────────────────────────────────────────
+			"Biotech R&D": {"GRI 101": 15, "GRI 416": 20, "GRI 306": 15},
+			"Clean Tech R&D": {"GRI 103": 20, "GRI 101": 20, "GRI 102": 15},
+			"Defense R&D": {"GRI 403": 20, "GRI 205": 20, "GRI 301": 10},
+			"Medical R&D": {"GRI 416": 25, "GRI 306": 15, "GRI 418": 10},
+			"Industrial R&D": {"GRI 103": 15, "GRI 301": 15, "GRI 306": 15},
+			"Agricultural R&D": {"GRI 303": 15, "GRI 101": 15, "GRI 301": 10},
+
+			// ── Trading ──────────────────────────────────────────────────────────────
+			"Commodity Trading": {"GRI 204": 20, "GRI 308": 20, "GRI 414": 15},
+			"Import / Export": {"GRI 204": 20, "GRI 414": 20, "GRI 308": 15},
+			Wholesale: {"GRI 204": 20, "GRI 416": 15, "GRI 306": 10},
+			"Agricultural Trading": {
+				"GRI 204": 20,
+				"GRI 408": 20,
+				"GRI 414": 20,
+				"GRI 101": 10,
+			},
+			"Energy Trading": {"GRI 103": 15, "GRI 102": 15, "GRI 205": 15},
+			"Metals Trading": {"GRI 204": 20, "GRI 308": 15, "GRI 205": 15},
+
+			// ── Services (non-IT) ────────────────────────────────────────────────────
+			"Hospitality / Hotels": {
+				"GRI 303": 15,
+				"GRI 306": 15,
+				"GRI 401": 15,
+				"GRI 416": 10,
+			},
+			Tourism: {"GRI 101": 20, "GRI 413": 20, "GRI 103": 10, "GRI 416": 10},
+			"Waste Management Services": {
+				"GRI 306": 30,
+				"GRI 101": 20,
+				"GRI 403": 20,
+			},
+			"Facility Management": {"GRI 306": 15, "GRI 403": 20, "GRI 401": 10},
+			"Security Services": {"GRI 403": 25, "GRI 406": 15, "GRI 412": 10},
+			Catering: {"GRI 416": 20, "GRI 306": 20, "GRI 401": 10},
+			"Legal Services": {"GRI 205": 20, "GRI 418": 15, "GRI 406": 10},
+			"Accounting / Audit": {"GRI 205": 25, "GRI 207": 20, "GRI 418": 10},
+			"HR / Staffing": {"GRI 401": 20, "GRI 404": 20, "GRI 405": 15},
+			"Marketing / Advertising": {"GRI 417": 25, "GRI 418": 20},
+			"Events Management": {"GRI 416": 15, "GRI 403": 15, "GRI 306": 10},
+			"Public Relations": {"GRI 417": 20, "GRI 418": 15, "GRI 205": 10},
+		};
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// GRI STANDARD UNIVERSE
+		// One entry per GRI standard — never per sub-disclosure.
+		// All standards from FULL_SET_OF_GRI_STANDARDS/ are represented.
+		//   GRI 101 supersedes GRI 304 (Biodiversity 2016)
+		//   GRI 102 supersedes GRI 305 (Emissions 2016)
+		//   GRI 103 supersedes GRI 302 (Energy 2016)
+		// GRI 11/12/13/14 (sector standards) are excluded — they govern HOW to fill
+		// existing topic standards, not WHICH standards to include.
+		// ─────────────────────────────────────────────────────────────────────────────
+		let KPI_UNIVERSE = [
+			// ── Universal Standards (GRI 2, 3 — always mandatory) ───────────────────
+			{
+				kpi_code: "GRI 2",
+				name: "General Disclosures",
+				category: "Universal",
+				mandatory: true,
+				triggers: [],
+				material_topics: [],
+				regulatory_triggers: [],
+				reason: ["Mandatory GRI standard"],
+			},
+			{
+				kpi_code: "GRI 3",
+				name: "Material Topics",
+				category: "Universal",
+				mandatory: true,
+				triggers: [],
+				material_topics: [],
+				regulatory_triggers: [],
+				reason: ["Mandatory GRI standard"],
+			},
+
+			// ── Economic Standards (GRI 200 series) ─────────────────────────────────
+			{
+				kpi_code: "GRI 201",
+				name: "Economic Performance",
+				category: "Economic",
+				mandatory: false,
+				triggers: [],
+				material_topics: ["Economic"],
+				regulatory_triggers: ["BRSR_applicable"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 202",
+				name: "Market Presence",
+				category: "Economic",
+				mandatory: false,
+				triggers: ["CompanyProfile.company_size"],
+				material_topics: ["Economic"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 203",
+				name: "Indirect Economic Impacts",
+				category: "Economic",
+				mandatory: false,
+				triggers: ["Operations.community_interaction"],
+				material_topics: ["Economic", "Community"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 204",
+				name: "Procurement Practices",
+				category: "Economic",
+				mandatory: false,
+				triggers: ["Operations.suppliers_exist"],
+				material_topics: ["Supply Chain"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 205",
+				name: "Anti-corruption",
+				category: "Economic",
+				mandatory: false,
+				triggers: ["Governance.anti_corruption_policy"],
+				material_topics: ["Ethics"],
+				regulatory_triggers: ["BRSR_applicable", "govt_tenders"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 206",
+				name: "Anti-competitive Behavior",
+				category: "Economic",
+				mandatory: false,
+				triggers: [],
+				material_topics: ["Ethics"],
+				regulatory_triggers: ["govt_tenders"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 207",
+				name: "Tax",
+				category: "Economic",
+				mandatory: false,
+				triggers: [],
+				material_topics: ["Tax"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+
+			// ── Environmental Standards ──────────────────────────────────────────────
+			// New topic standards (supersede legacy equivalents)
+			{
+				kpi_code: "GRI 101",
+				name: "Biodiversity",
+				category: "Environmental",
+				mandatory: false,
+				// Supersedes GRI 304 (Biodiversity 2016)
+				triggers: [
+					"Environmental.biodiversity_presence",
+					"Environmental.env_sensitive_sites",
+				],
+				material_topics: ["Biodiversity"],
+				regulatory_triggers: ["CSRD_exposure"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 102",
+				name: "Climate Change",
+				category: "Environmental",
+				mandatory: false,
+				// Supersedes GRI 305 (Emissions 2016)
+				triggers: [
+					"Operations.energy_use",
+					"Operations.manufacturing",
+					"Environmental.climate_risk",
+				],
+				material_topics: ["Climate"],
+				regulatory_triggers: ["CSRD_exposure", "BRSR_applicable"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 103",
+				name: "Energy",
+				category: "Environmental",
+				mandatory: false,
+				// Supersedes GRI 302 (Energy 2016)
+				triggers: ["Operations.energy_use", "Operations.manufacturing"],
+				material_topics: ["Energy", "Climate"],
+				regulatory_triggers: ["CSRD_exposure", "BRSR_applicable"],
+				reason: [],
+			},
+			// Legacy / still-current environmental standards
+			{
+				kpi_code: "GRI 301",
+				name: "Materials",
+				category: "Environmental",
+				mandatory: false,
+				triggers: ["Operations.manufacturing"],
+				material_topics: ["Materials"],
+				regulatory_triggers: ["CSRD_exposure"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 303",
+				name: "Water and Effluents",
+				category: "Environmental",
+				mandatory: false,
+				triggers: ["Operations.water_intensive"],
+				material_topics: ["Water"],
+				regulatory_triggers: ["CSRD_exposure"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 306",
+				name: "Waste",
+				category: "Environmental",
+				mandatory: false,
+				triggers: [
+					"Operations.waste_generated",
+					"Operations.manufacturing",
+					"Operations.hazardous_material",
+				],
+				material_topics: ["Waste"],
+				regulatory_triggers: ["CSRD_exposure"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 307",
+				name: "Environmental Compliance",
+				category: "Environmental",
+				mandatory: false,
+				triggers: [
+					"Environmental.environmental_fines",
+					"Strategy.compliance_incidents",
+				],
+				material_topics: ["Ethics"],
+				regulatory_triggers: ["CSRD_exposure"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 308",
+				name: "Supplier Environmental Assessment",
+				category: "Environmental",
+				mandatory: false,
+				triggers: ["Operations.suppliers_exist"],
+				material_topics: ["Supply Chain"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+
+			// ── Social Standards (GRI 400 series) ───────────────────────────────────
+			{
+				kpi_code: "GRI 401",
+				name: "Employment",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Workforce.employees_total"],
+				material_topics: ["Labor"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 402",
+				name: "Labor-Management Relations",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Workforce.union_status"],
+				material_topics: ["Labor"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 403",
+				name: "Occupational Health and Safety",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Workforce.occupational_risk"],
+				material_topics: ["Health & Safety"],
+				regulatory_triggers: ["BRSR_applicable"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 404",
+				name: "Training and Education",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Workforce.training_hours"],
+				material_topics: ["Labor"],
+				regulatory_triggers: ["BRSR_applicable"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 405",
+				name: "Diversity and Equal Opportunity",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Workforce.diversity_dimensions"],
+				material_topics: ["Diversity"],
+				regulatory_triggers: ["BRSR_applicable"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 406",
+				name: "Non-discrimination",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Strategy.grievance_mechanism"],
+				material_topics: ["Human Rights"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 407",
+				name: "Freedom of Association and Collective Bargaining",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Operations.contract_labor", "Workforce.union_status"],
+				material_topics: ["Human Rights"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 408",
+				name: "Child Labor",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Operations.child_labor_risk"],
+				material_topics: ["Human Rights"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 409",
+				name: "Forced or Compulsory Labor",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Operations.forced_labor_risk"],
+				material_topics: ["Human Rights"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 410",
+				name: "Security Practices",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Operations.security_personnel"],
+				material_topics: ["Human Rights"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 411",
+				name: "Rights of Indigenous Peoples",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Operations.indigenous_land"],
+				material_topics: ["Human Rights", "Community"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 412",
+				name: "Human Rights Assessment",
+				category: "Social",
+				mandatory: false,
+				triggers: [
+					"Operations.contract_labor",
+					"Operations.child_labor_risk",
+					"Operations.forced_labor_risk",
+				],
+				material_topics: ["Human Rights"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 413",
+				name: "Local Communities",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Operations.community_interaction"],
+				material_topics: ["Community"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 414",
+				name: "Supplier Social Assessment",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Operations.suppliers_exist"],
+				material_topics: ["Supply Chain"],
+				regulatory_triggers: ["CSRD_exposure"],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 415",
+				name: "Public Policy",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Operations.political_engagement"],
+				material_topics: ["Ethics"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 416",
+				name: "Customer Health and Safety",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Operations.product_safety"],
+				material_topics: ["Product Safety"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 417",
+				name: "Marketing and Labeling",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Operations.product_safety"],
+				material_topics: ["Product Safety"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 418",
+				name: "Customer Privacy",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Operations.customer_data"],
+				material_topics: ["Data Privacy"],
+				regulatory_triggers: [],
+				reason: [],
+			},
+			{
+				kpi_code: "GRI 419",
+				name: "Socioeconomic Compliance",
+				category: "Social",
+				mandatory: false,
+				triggers: ["Regulatory.govt_tenders"],
+				material_topics: ["Ethics"],
+				regulatory_triggers: ["govt_tenders"],
+				reason: [],
+			},
+		];
+
+		// Attach runtime fields — keep base definitions clean
+		KPI_UNIVERSE = KPI_UNIVERSE.map((kpi) => ({
+			...kpi,
+			score: kpi.mandatory ? 100 : 0,
+			locked: kpi.mandatory,
+			status: kpi.mandatory ? "Mandatory" : "Optional",
+			reason: kpi.reason.slice(),
+		}));
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// MAIN SCORING FUNCTION
+		//
+		// Input shape:
+		// {
+		//   CompanyProfile: { industry, sub_industry, company_size, ownership_type, listing_status }
+		//   Governance:     { sustainability_oversight, conflicts_of_interest_policy,
+		//                     remuneration_policy, anti_corruption_policy, code_of_conduct }
+		//   Strategy:       { sustainability_strategy, esg_policy_commitments (array),
+		//                     policy_embedding (array), remediation_process (array),
+		//                     grievance_mechanism, compliance_incidents }
+		//   Operations:     { manufacturing, energy_use, water_intensive, waste_generated,
+		//                     hazardous_material, suppliers_exist, contract_labor,
+		//                     security_personnel, community_interaction, indigenous_land,
+		//                     customer_data, product_safety, political_engagement,
+		//                     child_labor_risk  (None | Low | Medium | High),
+		//                     forced_labor_risk (None | Low | Medium | High) }
+		//   Workforce:      { employees_total, workforce_type (array), union_status,
+		//                     occupational_risk (Low | Medium | High | Critical),
+		//                     training_hours, diversity_dimensions (array) }
+		//   Environmental:  { env_sensitive_sites (None | Low | Medium | High),
+		//                     climate_risk (Physical | Transition | Both | None),
+		//                     biodiversity_presence, environmental_fines }
+		//   Materiality:    { [topic]: { impact (0–5), likelihood (0–5), stakeholder_concern (0–5) } }
+		//   Regulatory:     { BRSR_applicable, CSRD_exposure, govt_tenders, ESG_finance }
+		// }
+		// ─────────────────────────────────────────────────────────────────────────────
+		function processInputs(inputs) {
+			// Deep-copy so each call is stateless
+			const kpis = KPI_UNIVERSE.map((kpi) => ({
+				...kpi,
+				reason: kpi.reason.slice(),
+			}));
+
+			// Helpers
+			const find = (code) => kpis.find((k) => k.kpi_code === code);
+			const add = (code, pts, label) => {
+				const kpi = find(code);
+				if (kpi && !kpi.locked) {
+					kpi.score = Math.min(kpi.score + pts, 99);
+					kpi.reason.push(label);
+				}
+			};
+			const forceIn = (code, label) => {
+				const kpi = find(code);
+				if (kpi) {
+					kpi.status = "Mandatory";
+					kpi.locked = true;
+					kpi.score = 100;
+					kpi.reason.push(label);
+				}
+			};
+
+			const cp = inputs.CompanyProfile || {};
+			const gov = inputs.Governance || {};
+			const str = inputs.Strategy || {};
+			const ops = inputs.Operations || {};
+			const wf = inputs.Workforce || {};
+			const env = inputs.Environmental || {};
+			const reg = inputs.Regulatory || {};
+
+			// ── STEP 1: Mandatory standards already locked from universe init ─────────
+
+			// ── STEP 2: Industry & sub-industry baseline scoring ─────────────────────
+			const industryW = industryKpiMapping[cp.industry?.trim()] || {};
+			const subIndustryW = subIndustryKpiMapping[cp.sub_industry?.trim()] || {};
+
+			kpis.forEach((kpi) => {
+				if (kpi.locked) return;
+				if (industryW[kpi.kpi_code] !== undefined) {
+					kpi.score += industryW[kpi.kpi_code];
+					kpi.reason.push(`Industry baseline (${cp.industry})`);
+				}
+				if (subIndustryW[kpi.kpi_code] !== undefined) {
+					kpi.score += subIndustryW[kpi.kpi_code];
+					kpi.reason.push(`Sub-industry baseline (${cp.sub_industry})`);
+				}
+			});
+
+			// ── STEP 3: Economic baseline ─────────────────────────────────────────────
+			["GRI 201", "GRI 202", "GRI 203"].forEach((c) =>
+				add(c, 15, "Economic baseline disclosure")
+			);
+
+			// ── STEP 4: Governance & Strategy scoring ─────────────────────────────────
+			if (gov.anti_corruption_policy) {
+				add("GRI 205", 20, "Anti-corruption policy declared");
+			}
+			if (gov.conflicts_of_interest_policy) {
+				add("GRI 205", 10, "Conflicts of interest policy");
+			}
+			if (gov.remuneration_policy) {
+				add("GRI 201", 10, "Remuneration policy present");
+			}
+
+			if (str.grievance_mechanism) {
+				add("GRI 406", 15, "Grievance mechanism in place");
+				add("GRI 412", 10, "Grievance mechanism in place");
+			}
+			if (str.compliance_incidents) {
+				add("GRI 307", 25, "Compliance incidents reported");
+				add("GRI 419", 20, "Compliance incidents reported");
+				add("GRI 206", 15, "Compliance incidents reported");
+			}
+			if (str.esg_policy_commitments?.length > 0) {
+				add("GRI 205", 10, "ESG policy commitments declared");
+			}
+
+			// ── STEP 5: Operational trigger scoring ───────────────────────────────────
+			if (ops.manufacturing) {
+				["GRI 301", "GRI 103", "GRI 303", "GRI 102", "GRI 306"]
+					.forEach((c) => add(c, 30, "Manufacturing operations"));
+			}
+			if (ops.energy_use) {
+				add("GRI 103", 30, "Energy usage declared");
+				add("GRI 102", 30, "Energy usage declared");
+			}
+			if (ops.water_intensive) add("GRI 303", 25, "Water intensive operations");
+			if (ops.waste_generated) add("GRI 306", 25, "Waste generated");
+			if (ops.hazardous_material) {
+				add("GRI 306", 25, "Hazardous material present");
+			}
+
+			if (ops.suppliers_exist) {
+				["GRI 204", "GRI 308", "GRI 414"].forEach((c) =>
+					add(c, 25, "Suppliers present")
+				);
+			}
+			if (ops.contract_labor) {
+				["GRI 407", "GRI 408", "GRI 409"].forEach((c) =>
+					add(c, 30, "Contract/migrant labor")
+				);
+				add("GRI 412", 20, "Contract labor — human rights assessment required");
+			}
+			if (ops.security_personnel) {
+				add("GRI 410", 20, "Security personnel present");
+			}
+			if (ops.community_interaction) {
+				add("GRI 413", 20, "Community interaction");
+				add("GRI 203", 15, "Community interaction");
+			}
+			if (ops.indigenous_land) add("GRI 411", 25, "Indigenous land operations");
+			if (ops.customer_data) add("GRI 418", 30, "Customer data processing");
+			if (ops.product_safety) {
+				add("GRI 416", 25, "Product safety risk");
+				add("GRI 417", 25, "Product safety risk");
+			}
+			if (ops.political_engagement) add("GRI 415", 20, "Political engagement");
+
+			if (ops.child_labor_risk && ops.child_labor_risk !== "None") {
+				const pts = ops.child_labor_risk === "High"
+					? 35
+					: ops.child_labor_risk === "Medium"
+						? 25
+						: 15;
+				add("GRI 408", pts, `Child labor risk (${ops.child_labor_risk})`);
+				add("GRI 412", pts - 5, `Child labor risk (${ops.child_labor_risk})`);
+			}
+			if (ops.forced_labor_risk && ops.forced_labor_risk !== "None") {
+				const pts = ops.forced_labor_risk === "High"
+					? 35
+					: ops.forced_labor_risk === "Medium"
+						? 25
+						: 15;
+				add("GRI 409", pts, `Forced labor risk (${ops.forced_labor_risk})`);
+				add("GRI 412", pts - 5, `Forced labor risk (${ops.forced_labor_risk})`);
+			}
+
+			// ── STEP 6: Workforce scoring ─────────────────────────────────────────────
+			if ((wf.employees_total || 0) > 0) add("GRI 401", 20, "Employees reported");
+			if (wf.union_status && wf.union_status !== "None") {
+				add("GRI 402", 25, `Union status: ${wf.union_status}`);
+				add("GRI 407", 20, `Union status: ${wf.union_status}`);
+			}
+			if (wf.occupational_risk && wf.occupational_risk !== "Low") {
+				const pts = wf.occupational_risk === "Critical"
+					? 40
+					: wf.occupational_risk === "High"
+						? 30
+						: 20;
+				add("GRI 403", pts, `Occupational risk (${wf.occupational_risk})`);
+			}
+			if ((wf.training_hours || 0) > 0) {
+				add("GRI 404", 20, "Training hours reported");
+			}
+			if (wf.diversity_dimensions?.length > 0) {
+				add("GRI 405", 25, "Diversity dimensions tracked");
+			}
+
+			if (Array.isArray(wf.workforce_type)) {
+				const flexible = wf.workforce_type.some((t) =>
+					["contract", "gig", "migrant"].includes(t.toLowerCase())
+				);
+				if (flexible) {
+					["GRI 407", "GRI 409", "GRI 401"].forEach((c) =>
+						add(c, 20, "Flexible/migrant workforce type")
+					);
+				}
+			}
+
+			// ── STEP 7: Environmental scoring ─────────────────────────────────────────
+			if (env.biodiversity_presence) {
+				add("GRI 101", 30, "Biodiversity presence declared");
+			}
+			if (env.environmental_fines) {
+				add("GRI 307", 35, "Environmental fines / non-compliance");
+				add("GRI 419", 25, "Environmental fines / non-compliance");
+			}
+
+			if (env.climate_risk && env.climate_risk !== "None") {
+				add("GRI 102", 25, `Climate risk declared (${env.climate_risk})`);
+				add("GRI 103", 15, `Climate risk declared (${env.climate_risk})`);
+			}
+			if (env.env_sensitive_sites && env.env_sensitive_sites !== "None") {
+				const pts = env.env_sensitive_sites === "High"
+					? 30
+					: env.env_sensitive_sites === "Medium"
+						? 20
+						: 10;
+				add(
+					"GRI 101",
+					pts,
+					`Environmentally sensitive sites (${env.env_sensitive_sites})`,
+				);
+			}
+
+			// ── STEP 8: Materiality scoring ───────────────────────────────────────────
+			for (const topic in (inputs.Materiality || {})) {
+				const mat = inputs.Materiality[topic];
+				const mat_score = (mat.impact * 0.5) + (mat.likelihood * 0.3) +
+					(mat.stakeholder_concern * 0.2);
+				const codes = topicKpiMapping[topic];
+				if (!codes) continue;
+
+				if (mat_score >= MATERIALITY_THRESHOLD) {
+					codes.forEach((code) => {
+						const kpi = find(code);
+						if (kpi && !kpi.locked) {
+							kpi.score = Math.min(kpi.score + 40, 99);
+							kpi.status = "Mandatory";
+							kpi.locked = true;
+							kpi.reason.push(`High materiality: ${topic}`);
+						}
+					});
+				} else if (mat_score >= 3) {
+					codes.forEach((code) =>
+						add(code, 20, `Medium materiality: ${topic}`)
+					);
+				}
+			}
+
+			// ── STEP 9: Regulatory override ───────────────────────────────────────────
+			if (reg.BRSR_applicable) {
+				["GRI 201", "GRI 205", "GRI 403", "GRI 404", "GRI 405"]
+					.forEach((c) => forceIn(c, "BRSR regulatory requirement"));
+			}
+
+			if (reg.CSRD_exposure) {
+				const csrdSet = [
+					"GRI 103",
+					"GRI 102",
+					"GRI 306",
+					"GRI 307",
+					"GRI 414",
+					"GRI 301",
+				];
+				if (ops.water_intensive) csrdSet.push("GRI 303");
+				if (env.biodiversity_presence) csrdSet.push("GRI 101");
+				csrdSet.forEach((c) => forceIn(c, "CSRD exposure"));
+			}
+
+			if (reg.govt_tenders) {
+				["GRI 205", "GRI 206", "GRI 419"].forEach((c) =>
+					forceIn(c, "Government tenders")
+				);
+			}
+
+			if (reg.ESG_finance) {
+				kpis.forEach((kpi) => {
+					if (
+						!kpi.locked &&
+						["Environmental", "Social", "Economic"].includes(kpi.category)
+					) {
+						kpi.score = Math.min(kpi.score + 20, 99);
+						kpi.reason.push("ESG-linked financing");
+					}
+				});
+			}
+
+			// ── STEP 10: Confidence scoring → status assignment ───────────────────────
+			kpis.forEach((kpi) => {
+				if (kpi.locked) return;
+				if (kpi.score >= 80) {
+					kpi.status = "Mandatory";
+					kpi.locked = true;
+				} else if (kpi.score >= 60) kpi.status = "Strongly Recommended";
+				else if (kpi.score >= 40) kpi.status = "Recommended";
+				else kpi.status = "Optional";
+			});
+
+			// ── OUTPUT ────────────────────────────────────────────────────────────────
+			const order = [
+				"Mandatory",
+				"Strongly Recommended",
+				"Recommended",
+				"Optional",
+			];
+
+			return kpis
+				.map((kpi) => ({
+					kpi_code: kpi.kpi_code,
+					name: kpi.name,
+					status: kpi.status,
+					locked: kpi.locked,
+					confidence_score: kpi.score,
+					reason: [...new Set(kpi.reason)],
+				}))
+				.sort((a, b) => order.indexOf(a.status) - order.indexOf(b.status))
+				.sort((a, b) => b.confidence_score - a.confidence_score);
+		}
+
+		test_input = {
+			"CompanyProfile": {
+				"industry": "Manufacturing",
+				"sub_industry": "Steel",
+				"company_size": "Large",
+				"ownership_type": "Public",
+				"listing_status": "Listed",
+			},
+			"Governance": {
+				"sustainability_oversight": true,
+				"conflicts_of_interest_policy": true,
+				"remuneration_policy": true,
+				"anti_corruption_policy": true,
+				"code_of_conduct": true,
+			},
+			"Strategy": {
+				"sustainability_strategy": true,
+				"esg_policy_commitments": ["Ethics", "Human Rights", "Environment"],
+				"policy_embedding": ["Training", "Audits"],
+				"remediation_process": ["Grievance Mechanism", "Mediation"],
+				"grievance_mechanism": true,
+				"compliance_incidents": false,
+			},
+			"Operations": {
+				"manufacturing": true,
+				"energy_use": true,
+				"water_intensive": false,
+				"waste_generated": true,
+				"hazardous_material": false,
+				"suppliers_exist": true,
+				"contract_labor": true,
+				"security_personnel": false,
+				"community_interaction": true,
+				"indigenous_land": false,
+				"customer_data": false,
+				"product_safety": false,
+				"political_engagement": false,
+				"child_labor_risk": "Low",
+				"forced_labor_risk": "None",
+			},
+			"Workforce": {
+				"employees_total": 1200,
+				"workforce_type": ["Permanent", "Contract"],
+				"union_status": "Partial",
+				"occupational_risk": "High",
+				"training_hours": 40,
+				"diversity_dimensions": ["Gender", "Age", "Disability"],
+			},
+			"Environmental": {
+				"env_sensitive_sites": "Low",
+				"climate_risk": "Transition",
+				"biodiversity_presence": false,
+				"environmental_fines": false,
+			},
+			"Materiality": {
+				"Climate": {"impact": 5, "likelihood": 4, "stakeholder_concern": 5},
+				"Energy": {"impact": 4, "likelihood": 4, "stakeholder_concern": 3},
+				"Health & Safety": {
+					"impact": 4,
+					"likelihood": 3,
+					"stakeholder_concern": 4,
+				},
+				"Supply Chain": {
+					"impact": 3,
+					"likelihood": 3,
+					"stakeholder_concern": 3,
+				},
+				"Waste": {"impact": 2, "likelihood": 2, "stakeholder_concern": 2},
+			},
+			"Regulatory": {
+				"BRSR_applicable": false,
+				"CSRD_exposure": true,
+				"govt_tenders": false,
+				"ESG_finance": true,
+			},
+		};
+
+		console.log(processInputs(test_input));
+	</script>
+	<script>
+		// ─────────────────────────────────────────────────────────────────────────────
+		// CONSTANTS
+		// ─────────────────────────────────────────────────────────────────────────────
+		const STORAGE_KEY = 'gri_autokpi_v1';
+
+		const INDUSTRY_SUB_MAP = {
+			Manufacturing: ['Plastics', 'Steel', 'Textiles', 'Automotive', 'Chemicals', 'Electronics', 'Food & Beverage', 'Paper & Pulp', 'Rubber', 'Glass', 'Cement', 'Aerospace', 'Defense', 'Furniture', 'Printing', 'Medical Devices', 'Packaging', 'Semiconductors', 'Luxury Goods', 'Tobacco', 'Aluminium', 'Ceramics', 'Industrial Machinery', 'Consumer Goods'],
+			Energy: ['Oil & Gas', 'Solar', 'Wind Power', 'Coal', 'Nuclear', 'Hydropower', 'Geothermal', 'Biomass', 'LNG', 'Electricity Transmission', 'Energy Storage', 'Hydrogen Energy'],
+			Water: [],
+			Retail: ['Fast Fashion', 'Grocery', 'E-commerce', 'Luxury Retail', 'Electronics Retail', 'Restaurants / Food Service', 'Automotive Retail', 'Pharmacy Retail', 'Department Stores', 'Sports & Outdoor Retail', 'Home Improvement Retail'],
+			Services: ['Hospitality / Hotels', 'Tourism', 'Waste Management Services', 'Facility Management', 'Security Services', 'Catering', 'Legal Services', 'Accounting / Audit', 'HR / Staffing', 'Marketing / Advertising', 'Events Management', 'Public Relations'],
+			IT: ['Software', 'Consulting', 'Cybersecurity', 'Cloud Computing', 'AI / ML', 'Telecom', 'Data Centers', 'Gaming', 'E-commerce Platform', 'IT Services / Outsourcing', 'Media & Publishing', 'Social Media', 'AdTech', 'SaaS'],
+			Healthcare: ['Pharma', 'Hospital', 'Medical Devices (HC)', 'Diagnostics', 'Biotech', 'Dental', 'Mental Health', 'Veterinary', 'Home Healthcare', 'Clinical Research'],
+			Agriculture: ['Farming', 'Aquaculture', 'Forestry', 'Livestock', 'Horticulture', 'Organic Farming', 'Agri-tech', 'Palm Oil', 'Sugar & Ethanol', 'Coffee & Cocoa', 'Fisheries'],
+			Education: ['Higher Education', 'K-12', 'Online Education / EdTech', 'Vocational Training', 'Early Childhood', 'Corporate Training'],
+			'R&D': ['Biotech R&D', 'Clean Tech R&D', 'Defense R&D', 'Medical R&D', 'Industrial R&D', 'Agricultural R&D'],
+			Logistics: ['3PL / Logistics', 'Shipping / Maritime', 'Aviation / Airlines', 'Rail', 'Port Operations', 'Last-mile Delivery', 'Freight Forwarding', 'Warehousing', 'Trucking', 'Cold Chain Logistics'],
+			Construction: ['Real Estate Development', 'Civil Engineering', 'Infrastructure', 'Interior Design / Fit-out', 'Building Materials', 'EPC Contractors', 'Property Management'],
+			Mining: ['Coal Mining', 'Metal Mining', 'Gold Mining', 'Diamond Mining', 'Sand & Gravel', 'Phosphate Mining', 'Uranium Mining', 'Iron Ore', 'Copper Mining', 'Lithium Mining', 'Rare Earth Mining', 'Quarrying'],
+			Finance: ['Banking', 'Insurance', 'Asset Management', 'Private Equity', 'Fintech', 'Microfinance', 'Stock Exchange', 'Investment Banking', 'Venture Capital', 'Real Estate Finance', 'Trade Finance'],
+			Trading: ['Commodity Trading', 'Import / Export', 'Wholesale', 'Agricultural Trading', 'Energy Trading', 'Metals Trading'],
+		};
+
+		const MAT_TOPICS = [
+			'Climate', 'Energy', 'Water', 'Waste', 'Biodiversity', 'Materials',
+			'Health & Safety', 'Human Rights', 'Supply Chain', 'Community',
+			'Data Privacy', 'Product Safety', 'Labor', 'Diversity', 'Ethics', 'Tax', 'Economic',
+		];
+
+		// Boolean field names (checkboxes / toggles)
+		const BOOL_FIELDS = [
+			'sustainability_oversight', 'conflicts_of_interest_policy', 'remuneration_policy',
+			'anti_corruption_policy', 'code_of_conduct', 'sustainability_strategy',
+			'grievance_mechanism', 'compliance_incidents',
+			'manufacturing', 'energy_use', 'water_intensive', 'waste_generated', 'hazardous_material',
+			'suppliers_exist', 'contract_labor', 'security_personnel', 'community_interaction',
+			'indigenous_land', 'customer_data', 'product_safety', 'political_engagement',
+			'biodiversity_presence', 'environmental_fines',
+			'BRSR_applicable', 'CSRD_exposure', 'govt_tenders', 'ESG_finance',
+		];
+
+		// Multi-select chip group names
+		const MULTI_FIELDS = [
+			'esg_policy_commitments', 'policy_embedding', 'remediation_process',
+			'workforce_type', 'diversity_dimensions',
+		];
+
+		// Single-select (dropdown) non-profile fields
+		const SELECT_FIELDS = [
+			'child_labor_risk', 'forced_labor_risk', 'union_status',
+			'occupational_risk', 'env_sensitive_sites', 'climate_risk',
+		];
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// STATE
+		// ─────────────────────────────────────────────────────────────────────────────
+		let allResults = [];
+		let currentFilter = 'all';
+		let matRowSeq = 0;
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// BOOT
+		// ─────────────────────────────────────────────────────────────────────────────
+		document.addEventListener('DOMContentLoaded', () => {
+			buildIndustryDropdown();
+			wireIndustryChange();
+			wireFormAutoSave();
+			setupMaterialityAddBtn();
+			loadFromStorage();                          // restores saved state + mat rows
+			document.getElementById('btn-run').addEventListener('click', runAnalysis);
+			document.getElementById('btn-back').addEventListener('click', showForm);
+			wireResultsFilter();
+			updateSubmitHint();
+		});
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// INDUSTRY / SUB-INDUSTRY DROPDOWNS
+		// ─────────────────────────────────────────────────────────────────────────────
+		function buildIndustryDropdown() {
+			const sel = document.getElementById('industry');
+			Object.keys(INDUSTRY_SUB_MAP).forEach(ind => {
+				sel.appendChild(new Option(ind, ind));
+			});
+		}
+
+		function populateSubIndustry(industry) {
+			const sel = document.getElementById('sub_industry');
+			const subs = INDUSTRY_SUB_MAP[industry] || [];
+			sel.innerHTML = '<option value="">— Select Sub-Industry —</option>';
+			subs.forEach(s => sel.appendChild(new Option(s, s)));
+			sel.disabled = subs.length === 0;
+		}
+
+		function wireIndustryChange() {
+			document.getElementById('industry').addEventListener('change', e => {
+				populateSubIndustry(e.target.value);
+				saveToStorage();
+			});
+		}
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// MATERIALITY ROWS
+		// ─────────────────────────────────────────────────────────────────────────────
+		function setupMaterialityAddBtn() {
+			document.getElementById('add-mat-row').addEventListener('click', () => {
+				addMatRow();
+				saveToStorage();
+			});
+		}
+
+		function addMatRow(topic = '', impact = '', likelihood = '', stakeholder = '') {
+			const id = `mat_${matRowSeq++}`;
+			const wrap = document.getElementById('materiality-rows');
+
+			const row = document.createElement('div');
+			row.className = 'materiality-row';
+
+			const opts = MAT_TOPICS.map(t =>
+				`<option value="${t}"${t === topic ? ' selected' : ''}>${t}</option>`
+			).join('');
+
+			row.innerHTML = `
+    <select class="score-input" style="text-align:left;font-family:var(--font);font-size:14px" data-f="topic">
+      <option value="">— Topic —</option>${opts}
+    </select>
+    <input type="number" class="score-input" min="0" max="5" step="0.5" placeholder="0–5" value="${impact}"      data-f="impact">
+    <input type="number" class="score-input" min="0" max="5" step="0.5" placeholder="0–5" value="${likelihood}"  data-f="likelihood">
+    <input type="number" class="score-input" min="0" max="5" step="0.5" placeholder="0–5" value="${stakeholder}" data-f="stakeholder_concern">
+    <button type="button" class="btn-remove" title="Remove row">×</button>
+  `;
+
+			row.querySelector('.btn-remove').addEventListener('click', () => {
+				row.remove();
+				saveToStorage();
+			});
+
+			row.querySelectorAll('select, input').forEach(el =>
+				el.addEventListener('change', saveToStorage)
+			);
+
+			wrap.appendChild(row);
+		}
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// COLLECT FORM DATA
+		// ─────────────────────────────────────────────────────────────────────────────
+		function collectRaw() {
+			const raw = {};
+
+			// Profile dropdowns
+			['industry', 'sub_industry', 'company_size', 'ownership_type', 'listing_status'].forEach(k => {
+				raw[k] = document.getElementById(k)?.value ?? '';
+			});
+
+			// Booleans
+			BOOL_FIELDS.forEach(k => {
+				const el = document.querySelector(`input[name="${k}"]`);
+				raw[k] = el ? el.checked : false;
+			});
+
+			// Multi-selects
+			MULTI_FIELDS.forEach(name => {
+				raw[name] = [...document.querySelectorAll(`input[name="${name}"]:checked`)]
+					.map(el => el.value);
+			});
+
+			// Single dropdowns
+			SELECT_FIELDS.forEach(k => {
+				const el = document.getElementById(k) || document.querySelector(`select[name="${k}"]`);
+				raw[k] = el?.value ?? '';
+			});
+
+			// Numbers
+			raw.employees_total = parseInt(document.getElementById('employees_total')?.value, 10) || 0;
+			raw.training_hours = parseInt(document.getElementById('training_hours')?.value, 10) || 0;
+
+			// Materiality rows
+			raw.mat_rows = [...document.querySelectorAll('#materiality-rows .materiality-row')]
+				.map(row => ({
+					topic: row.querySelector('[data-f="topic"]').value,
+					impact: parseFloat(row.querySelector('[data-f="impact"]').value) || 0,
+					likelihood: parseFloat(row.querySelector('[data-f="likelihood"]').value) || 0,
+					stakeholder_concern: parseFloat(row.querySelector('[data-f="stakeholder_concern"]').value) || 0,
+				}));
+
+			return raw;
+		}
+
+		function buildProcessInputs(raw) {
+			const Materiality = {};
+			raw.mat_rows.forEach(r => {
+				if (r.topic) {
+					Materiality[r.topic] = {
+						impact: r.impact,
+						likelihood: r.likelihood,
+						stakeholder_concern: r.stakeholder_concern,
+					};
+				}
+			});
+
+			return {
+				CompanyProfile: {
+					industry: raw.industry,
+					sub_industry: raw.sub_industry,
+					company_size: raw.company_size,
+					ownership_type: raw.ownership_type,
+					listing_status: raw.listing_status,
+				},
+				Governance: {
+					sustainability_oversight: raw.sustainability_oversight,
+					conflicts_of_interest_policy: raw.conflicts_of_interest_policy,
+					remuneration_policy: raw.remuneration_policy,
+					anti_corruption_policy: raw.anti_corruption_policy,
+					code_of_conduct: raw.code_of_conduct,
+				},
+				Strategy: {
+					sustainability_strategy: raw.sustainability_strategy,
+					esg_policy_commitments: raw.esg_policy_commitments,
+					policy_embedding: raw.policy_embedding,
+					remediation_process: raw.remediation_process,
+					grievance_mechanism: raw.grievance_mechanism,
+					compliance_incidents: raw.compliance_incidents,
+				},
+				Operations: {
+					manufacturing: raw.manufacturing,
+					energy_use: raw.energy_use,
+					water_intensive: raw.water_intensive,
+					waste_generated: raw.waste_generated,
+					hazardous_material: raw.hazardous_material,
+					suppliers_exist: raw.suppliers_exist,
+					contract_labor: raw.contract_labor,
+					security_personnel: raw.security_personnel,
+					community_interaction: raw.community_interaction,
+					indigenous_land: raw.indigenous_land,
+					customer_data: raw.customer_data,
+					product_safety: raw.product_safety,
+					political_engagement: raw.political_engagement,
+					child_labor_risk: raw.child_labor_risk || 'None',
+					forced_labor_risk: raw.forced_labor_risk || 'None',
+				},
+				Workforce: {
+					employees_total: raw.employees_total,
+					workforce_type: raw.workforce_type,
+					union_status: raw.union_status || 'None',
+					occupational_risk: raw.occupational_risk || 'Low',
+					training_hours: raw.training_hours,
+					diversity_dimensions: raw.diversity_dimensions,
+				},
+				Environmental: {
+					env_sensitive_sites: raw.env_sensitive_sites || 'None',
+					climate_risk: raw.climate_risk || 'None',
+					biodiversity_presence: raw.biodiversity_presence,
+					environmental_fines: raw.environmental_fines,
+				},
+				Materiality,
+				Regulatory: {
+					BRSR_applicable: raw.BRSR_applicable,
+					CSRD_exposure: raw.CSRD_exposure,
+					govt_tenders: raw.govt_tenders,
+					ESG_finance: raw.ESG_finance,
+				},
+			};
+		}
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// LOCAL STORAGE
+		// ─────────────────────────────────────────────────────────────────────────────
+		function saveToStorage() {
+			try {
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(collectRaw()));
+				updateSubmitHint();
+			} catch (_) { /* quota exceeded – ignore */}
+		}
+
+		function loadFromStorage() {
+			let raw;
+			try {
+				const saved = localStorage.getItem(STORAGE_KEY);
+				if (!saved) {addDefaultMatRows(); return;}
+				raw = JSON.parse(saved);
+			} catch (_) {addDefaultMatRows(); return;}
+
+			// Profile
+			['industry', 'sub_industry', 'company_size', 'ownership_type', 'listing_status'].forEach(k => {
+				const el = document.getElementById(k);
+				if (el && raw[k] !== undefined) el.value = raw[k];
+			});
+			if (raw.industry) {
+				populateSubIndustry(raw.industry);
+				if (raw.sub_industry) document.getElementById('sub_industry').value = raw.sub_industry;
+			}
+
+			// Booleans
+			BOOL_FIELDS.forEach(k => {
+				const el = document.querySelector(`input[name="${k}"]`);
+				if (el && raw[k] !== undefined) el.checked = raw[k];
+			});
+
+			// Multi-selects
+			MULTI_FIELDS.forEach(name => {
+				const vals = raw[name] || [];
+				document.querySelectorAll(`input[name="${name}"]`).forEach(el => {
+					el.checked = vals.includes(el.value);
+				});
+			});
+
+			// Dropdowns
+			SELECT_FIELDS.forEach(k => {
+				const el = document.getElementById(k) || document.querySelector(`select[name="${k}"]`);
+				if (el && raw[k] !== undefined) el.value = raw[k];
+			});
+
+			// Numbers
+			if (raw.employees_total) document.getElementById('employees_total').value = raw.employees_total;
+			if (raw.training_hours) document.getElementById('training_hours').value = raw.training_hours;
+
+			// Materiality
+			if (raw.mat_rows?.length) {
+				raw.mat_rows.forEach(r => addMatRow(r.topic, r.impact, r.likelihood, r.stakeholder_concern));
+			} else {
+				addDefaultMatRows();
+			}
+		}
+
+		function addDefaultMatRows() {
+			addMatRow('Climate', 4, 3, 4);
+			addMatRow('Energy', 3, 3, 3);
+			addMatRow('');
+		}
+
+		function wireFormAutoSave() {
+			const form = document.getElementById('kpi-form');
+			form.addEventListener('change', saveToStorage);
+			form.addEventListener('input', saveToStorage);
+		}
+
+		function updateSubmitHint() {
+			const el = document.getElementById('submit-hint');
+			if (!el) return;
+			const d = new Date();
+			const t = d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+			el.textContent = `Auto-saved at ${t}`;
+		}
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// RUN ANALYSIS
+		// ─────────────────────────────────────────────────────────────────────────────
+		function runAnalysis() {
+			const raw = collectRaw();
+			saveToStorage();
+			const inputs = buildProcessInputs(raw);
+			allResults = processInputs(inputs);
+			currentFilter = 'all';
+
+			document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+			document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+
+			renderStats(allResults);
+			renderRows(allResults, 'all');
+			showResults();
+		}
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// RENDER — STATS
+		// ─────────────────────────────────────────────────────────────────────────────
+		function renderStats(results) {
+			const counts = {'Mandatory': 0, 'Strongly Recommended': 0, 'Recommended': 0, 'Optional': 0};
+			results.forEach(r => {if (counts[r.status] !== undefined) counts[r.status]++;});
+
+			document.getElementById('stats-bar').innerHTML = `
+    <div class="stat-pill s-mandatory">
+      <span class="stat-num">${counts['Mandatory']}</span>Mandatory
+    </div>
+    <div class="stat-pill s-strong">
+      <span class="stat-num">${counts['Strongly Recommended']}</span>Strongly Recommended
+    </div>
+    <div class="stat-pill s-rec">
+      <span class="stat-num">${counts['Recommended']}</span>Recommended
+    </div>
+    <div class="stat-pill s-opt">
+      <span class="stat-num">${counts['Optional']}</span>Optional
+    </div>
+  `;
+		}
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// RENDER — KPI ROWS
+		// ─────────────────────────────────────────────────────────────────────────────
+		function renderRows(results, filter) {
+			const body = document.getElementById('kpi-results-body');
+			const filtered = filter === 'all' ? results : results.filter(r => r.status === filter);
+
+			if (!filtered.length) {
+				body.innerHTML = `<div style="padding:44px;text-align:center;color:var(--text-muted);font-size:14px">No KPIs match this filter.</div>`;
+				return;
+			}
+
+			// Normalise bar width: cap display at 100%, actual score shown as number
+			const maxScore = Math.max(...filtered.map(r => r.confidence_score), 1);
+
+			body.innerHTML = filtered.map(kpi => {
+				const cls = kpi.status.replace(/\s+/g, '');
+				const barWidth = Math.round((Math.min(kpi.confidence_score, maxScore) / maxScore) * 100);
+				const reasons = kpi.reason.map(r =>
+					`<span class="reason-tag">${escHtml(r)}</span>`
+				).join('');
+
+				return `
+      <div class="kpi-row">
+        <span class="kpi-code">${escHtml(kpi.kpi_code)}</span>
+        <span class="kpi-name">${escHtml(kpi.name)}</span>
+        <span><span class="status-badge ${cls}">${escHtml(kpi.status)}</span></span>
+        <div class="score-bar-wrap">
+          <div class="score-bar">
+            <div class="score-bar-fill" style="width:${barWidth}%"></div>
+          </div>
+          <span class="score-num">${kpi.confidence_score}</span>
+        </div>
+        <div class="reason-tags">${reasons || '<span class="reason-tag">—</span>'}</div>
+      </div>
+    `;
+			}).join('');
+		}
+
+		function escHtml(str) {
+			return String(str)
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/"/g, '&quot;');
+		}
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// RESULTS FILTER
+		// ─────────────────────────────────────────────────────────────────────────────
+		function wireResultsFilter() {
+			document.getElementById('filter-bar').addEventListener('click', e => {
+				const btn = e.target.closest('.filter-btn');
+				if (!btn) return;
+				document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+				btn.classList.add('active');
+				currentFilter = btn.dataset.filter;
+				renderRows(allResults, currentFilter);
+			});
+		}
+
+		// ─────────────────────────────────────────────────────────────────────────────
+		// VIEW TRANSITIONS
+		// ─────────────────────────────────────────────────────────────────────────────
+		function showResults() {
+			document.getElementById('form-view').classList.add('hidden');
+			document.getElementById('results-view').classList.remove('hidden');
+			document.getElementById('submit-bar').classList.add('hidden');
+			window.scrollTo({top: 0, behavior: 'smooth'});
+		}
+
+		function showForm() {
+			document.getElementById('results-view').classList.add('hidden');
+			document.getElementById('form-view').classList.remove('hidden');
+			document.getElementById('submit-bar').classList.remove('hidden');
+			window.scrollTo({top: 0, behavior: 'smooth'});
+		}
+	</script>
+</body>
+
+</html>
